@@ -1,0 +1,33 @@
+---
+layout: default
+---
+
+<article class="post">
+  <header>
+    <h2>{{ page.title }}</h2>
+    <dl class="post-info">
+      <dt>Date:</dt>
+      <dd>{{ page.date | date_to_string }}</dd>
+      <dt>Category:</dt>
+      <dd>{{ page.category | category_link }}</dd>
+      <dt>Tagged with:</dt>
+      <dd>{{ page.tags | tag_link | array_to_sentence_string }}</dd>
+    </dl>
+  </header>
+
+  {{ content }}
+</article>
+
+<ul id="posts-nav">
+  {% if page.next %}
+    <li class="next">
+      <a href="{{ page.next.url }}">Next Post</a>
+    </li>
+  {% endif %}
+
+  {% if page.previous %}
+    <li class="prev">
+      <a href="{{ page.previous.url }}">Previous Post</a>
+    </li>
+  {% endif %}
+</ul>

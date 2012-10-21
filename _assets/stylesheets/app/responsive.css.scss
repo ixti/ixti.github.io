@@ -1,0 +1,44 @@
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+  body {
+    width: 753px;
+  }
+}
+
+
+@media only screen and (min-width: 480px) and (max-width: 767px) {
+  body {
+    width: 465px;
+  }
+
+  .navbar li {
+    display: block;
+  }
+}
+
+
+@media only screen and (max-width: 479px) {
+  body {
+    width: 300px;
+  }
+
+  #header > h1 > a {
+    background-image: url(asset_path('ixti.gif'));
+    display: inline-block;
+    height: 120px;
+    margin: 0px auto;
+    width: 300px;
+
+    span {
+      display: none;
+    }
+  }
+
+  .navbar ul:first-child, .navbar ul:last-child, .navbar ul {
+    float: none !important;
+    text-align: center;
+  }
+
+  .navbar li {
+    display: block;
+  }
+}

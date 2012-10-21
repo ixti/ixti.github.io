@@ -1,0 +1,20 @@
+---
+markdown: redcarpet
+
+redcarpet:
+  extensions:
+    - no_intra_emphasis
+    - fenced_code_blocks
+    - autolink
+    - strikethrough
+    - superscript
+    - smart
+
+assets:
+  compress:
+    css: sass
+    js:  uglifier
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
