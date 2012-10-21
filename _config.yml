@@ -18,3 +18,4 @@ assets:
 exclude:
   - Gemfile
   - Gemfile.lock
+  - Rakefile
