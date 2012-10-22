@@ -1,6 +1,6 @@
 (function () {
   function getByTag(tag) {
-    return document.getElementsByName(tag);
+    return document.getElementsByTagName(tag);
   }
 
 
