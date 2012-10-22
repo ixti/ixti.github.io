@@ -6,7 +6,14 @@ layout: default
   <article class="post">
     <header>
       <h2>{{ post.title }}</h2>
-      {% include post-info.html %}
+      <dl class="post-info">
+        <dt>Date:</dt>
+        <dd>{{ post.date | date_to_string }}</dd>
+        <dt>Category:</dt>
+        <dd>{{ post.category | category_link }}</dd>
+        <dt>Tagged with:</dt>
+        <dd>{{ post.tags | tag_link | array_to_sentence_string }}</dd>
+      </dl>
     </header>
 
     <div>
