@@ -1,8 +1,9 @@
 ---
-layout:   post
-category: development/ruby
-tags:     rack server rails sinatra ruby
-title:    Understanding Rack Builder
+layout:     post
+downloads:  [ 2011-09-03-understanding-rack-builder ]
+category:   development/ruby
+tags:       rack server rails sinatra ruby
+title:      Understanding Rack Builder
 ---
 
 Most of the web-frameworks for Ruby today use [Rack][1] - awesome web-server

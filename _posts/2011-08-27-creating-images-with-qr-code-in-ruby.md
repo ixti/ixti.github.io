@@ -1,8 +1,9 @@
 ---
-layout:   post
-category: development/ruby
-tags:     ruby qr code rmagick
-title:    Creating images with QR code in Ruby
+layout:     post
+downloads:  [ 2011-08-27-creating-images-with-qr-code-in-ruby ]
+category:   development/ruby
+tags:       ruby qr code rmagick
+title:      Creating images with QR code in Ruby
 ---
 
 Don't know why but recently I have decided that I want to have a [QR code][1]

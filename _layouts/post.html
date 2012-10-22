@@ -12,6 +12,22 @@ layout: default
   {{ content }}
 </article>
 
+{% if page.downloads %}
+  <section class="downloads">
+    <h2>Downloads</h2>
+    <ul>
+      {% for name in page.downloads %}
+        <li><a href="{% downloadable name %}">{{ name }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
 <ul id="posts-nav">
   {% if page.next %}
     <li class="next">
@@ -25,8 +41,3 @@ layout: default
     </li>
   {% endif %}
 </ul>
-
-<!-- DISQUS -->
-<div id="disqus_thread"></div>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>

@@ -1,8 +1,9 @@
 ---
-layout:   post
-category: development/javascript
-tags:     base64 utf8 unicode javascript snippet
-title:    Base64 encode/decode of UTF8 in browser with JS
+layout:     post
+downloads:  [ 2011-11-11-base64-encodedecode-of-utf8-in-browser-with-js ]
+category:   development/javascript
+tags:       base64 utf8 unicode javascript snippet
+title:      Base64 encode/decode of UTF8 in browser with JS
 ---
 
 While working on [live demo of JS-YAML][1], our pure JavaScript port of exciting
