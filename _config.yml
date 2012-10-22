@@ -15,6 +15,15 @@ assets:
     css: sass
     js:  uglifier
 
+tags:
+  layout: archive
+
+categories:
+  layout: archive
+
+archives:
+  layout: archive
+
 exclude:
   - Gemfile
   - Gemfile.lock
