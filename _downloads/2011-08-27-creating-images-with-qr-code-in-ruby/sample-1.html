@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head><title>QR Code string to canvas</title></head>
+<body>
+<canvas id="qr">####### ### #  # ####  ## #######
+#     # # # #### ### ##   #     #
+# ### # ## # ##  # # ###  # ### #
+# ### #   ### #  #    ### # ### #
+# ### #  ##  ## ##    #   # ### #
+#     # ## #  ## ##   ### #     #
+####### # # # # # # # # # #######
+        ##   ###   ##  #         
+  ### # ## # ##  ##  #######  ###
+#### #    ### #  ## ##  ###  ####
+#   ####  ### ##  #  #   # # ### 
+  ###      #   ## ###### #    ###
+###   #  ## #  #### ## ###     # 
+###    # ## ## #    # ## ###  # #
+ ## # # #          ## #  ##  ### 
+ #   # #  ###  ###  ### ####  ###
+# #  ###  #  #      # # ## ##### 
+#####    #   #  #  ###### #      
+ # ## #   ###  ###  ##  ### # ###
+ ## #  #####    # ## # ## ## ## #
+ # #  ##   # # #  ##  ## ##### ##
+# # ##  ######   #  ##  #    ## #
+# ### # ##  # # # # ##     ### # 
+#   #  # #        ##### #   # #  
+# #   ####  #  ##    #  #####  ##
+        ##### ##    # # #   ## ##
+#######    # ##   # # ### # #  # 
+#     #  ## ##  #  #    #   #####
+# ### # #### ###    ### #####  # 
+# ### # #  ### ### # # ##   ## # 
+# ### # ###  #  #    # # ##      
+#     #  ##    ###        ## #   
+#######   #     ## # ####     ## </canvas>
+<script type="text/javascript">
+  var scale   = 4,                              // each dot's size in pixels
+      dark    = '#',                            // char representing "dark" dot
+      qr      = document.getElementById('qr'),  // canvas element
+      data    = qr.textContent,                 // QR Code as a string
+      context = qr.getContext('2d');            // context used to draw dots
+
+  // jQuery alike array iterator
+  var each = function each(arr, fn) {
+    var i, l;
+    for (i = 0, l = arr.length; i < l; i++) {
+      fn(i, arr[i]);
+    }
+  };
+
+  // set canvas dimensions. amount of line breaks + 1 dot (last line has no NL)
+  qr.width = qr.height = scale * data.match(/\n/g).length + scale;
+
+  // for each row
+  each(data.split(/\n/), function (y, row) {
+    y *= scale;
+
+    // for each col
+    each(row.match(/./g), function (x, col) {
+      x *= scale;
+
+      context.fillStyle = (dark === col) ? '#000' : '#fff';
+      context.fillRect(x, y, x + scale, y + scale);
+    });
+  });
+</script>
+<p>"QR Code" is registered trademark of DENSO WAVE INCORPORATED</p>
+</body>
+</html>
+
