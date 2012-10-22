@@ -8,10 +8,14 @@ layout: default
     <dl class="post-info">
       <dt>Date:</dt>
       <dd>{{ page.date | date_to_string }}</dd>
-      <dt>Category:</dt>
-      <dd>{{ page.category | category_link }}</dd>
-      <dt>Tagged with:</dt>
-      <dd>{{ page.tags | tag_link | array_to_sentence_string }}</dd>
+      {% if page.category %}
+        <dt>Category:</dt>
+        <dd>{{ page.category | category_link }}</dd>
+      {% endif %}
+      {% if page.tags %}
+        <dt>Tagged with:</dt>
+        <dd>{{ page.tags | tag_link | array_to_sentence_string }}</dd>
+      {% endif %}
     </dl>
   </header>
 
