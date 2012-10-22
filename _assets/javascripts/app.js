@@ -1,3 +1,5 @@
+//= require modernizr
+
 (function () {
   function getByTag(tag) {
     return document.getElementsByTagName(tag);
