@@ -8,8 +8,8 @@ title:    Bye, Bye, Toto!
 Finally, I have replaced my [toto][1]-based [blog][2] with real monster -
 Mr. [Jekyll][3]. Thanks, Tom Preston-Werner AKA mojombo for this awesome
 project. So, I hope from now on, blogging will become easier for me. And
-I will, once I'll finish some of the outstanding issues with my current
-blog setup...
+I'll be posting more frequently once I'll finish some of the outstanding
+issues with my current blog setup...
 
 * I need a good categories/tags generation plugin (all existing are not good
   enough for me, so I guess I'll end up writing my own).
