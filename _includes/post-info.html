@@ -1,0 +1,14 @@
+<dl class="post-info">
+  <dt>Date:</dt>
+  <dd>{{ post.date | date_to_string }}</dd>
+
+  {% if post.category %}
+    <dt>Category:</dt>
+    <dd>{{ post.category | category_link }}</dd>
+  {% endif %}
+
+  {% if post.tags %}
+    <dt>Tagged with:</dt>
+    <dd>{{ post.tags | tag_link | array_to_sentence_string }}</dd>
+  {% endif %}
+</dl>
