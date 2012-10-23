@@ -1,11 +1,11 @@
-# jekyll-downloads
+# jekyll-zipballs
 #
 # Provides easy way to "attach" zipballs for the pages.
 #
 # USAGE:
 #
-# Put necessary files under `_downloads/<uniq-name>/` diretory, and then use
-# {{ <uniq-name> | zipball_link }} in your templates to get link to the zipball.
+# Put necessary files under `_zipballs/<uniq-name>/` directory, and then use
+# {{ <uniq-name> | zipball_link }} in your templates to get link of the zipball.
 #
 # Copyright (C) 2012 Aleksey V Zapparov (http://ixti.net/)
 #
@@ -42,19 +42,19 @@ require 'zip/zip'
 
 
 module Jekyll
-  module DownloadsPlugin
+  module ZipballPlugin
     module Logging
       protected
       def log level, message
-        puts "[DownloadsPlugin] #{level.to_s.upcase} #{message}"
+        puts "[ZipballPlugin] #{level.to_s.upcase} #{message}"
       end
     end # class Logging
 
 
     class Configuration < OpenStruct
       @@defaults = {
-        :sources => '_downloads',
-        :dirname => 'downloads'
+        :sources => '_zipballs',
+        :dirname => 'zipballs'
       }
 
       def initialize config = {}
@@ -65,12 +65,12 @@ module Jekyll
 
 
     module SitePatch
-      def downloads_config
-        @downloads_config ||= Configuration.new(self.config['downloads'] || {})
+      def zipballs_config
+        @zipballs_config ||= Configuration.new(self.config['downloads'] || {})
       end
 
       def has_downloadable? name
-        Dir.exists? File.join(self.source, self.downloads_config.sources, name)
+        Dir.exists? File.join(self.source, self.zipballs_config.sources, name)
       end
     end # module SitePatch
 
@@ -81,7 +81,7 @@ module Jekyll
       end
 
       def destination dest
-        File.join(dest, @site.downloads_config.dirname, filename)
+        File.join(dest, @site.zipballs_config.dirname, filename)
       end
 
       def filename
@@ -107,7 +107,7 @@ module Jekyll
 
     class Generator < ::Jekyll::Generator
       def generate site
-        sources = Pathname.new(site.source).join(site.downloads_config.sources)
+        sources = Pathname.new(site.source).join(site.zipballs_config.sources)
 
         sources.children.each do |source|
           next unless source.directory?
@@ -135,14 +135,14 @@ module Jekyll
           return
         end
 
-        "/#{site.downloads_config.dirname}/#{CGI.escape name}.zip"
+        "/#{site.zipballs_config.dirname}/#{CGI.escape name}.zip"
       end
     end
   end
 end
 
 
-Jekyll::Site.send :include, Jekyll::DownloadsPlugin::SitePatch
+Jekyll::Site.send :include, Jekyll::ZipballPlugin::SitePatch
 
 
-Liquid::Template.register_filter Jekyll::DownloadsPlugin::Filters
+Liquid::Template.register_filter Jekyll::ZipballPlugin::Filters

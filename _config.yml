@@ -15,6 +15,10 @@ assets:
     css: sass
     js:  uglifier
 
+zipballs:
+  sources: _downloads
+  dirname: downloads
+
 tags:
   layout: archive
 
