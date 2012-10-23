@@ -66,7 +66,7 @@ module Jekyll
 
     module SitePatch
       def zipballs_config
-        @zipballs_config ||= Configuration.new(self.config['downloads'] || {})
+        @zipballs_config ||= Configuration.new(self.config['zipballs'] || {})
       end
 
       def has_downloadable? name
@@ -106,8 +106,15 @@ module Jekyll
 
 
     class Generator < ::Jekyll::Generator
+      include Logging
+
       def generate site
         sources = Pathname.new(site.source).join(site.zipballs_config.sources)
+
+        unless sources.directory?
+          log :warn, "Sources not found: #{site.zipballs_config.sources}"
+          return
+        end
 
         sources.children.each do |source|
           next unless source.directory?
