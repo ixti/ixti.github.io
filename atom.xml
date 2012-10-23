@@ -1,0 +1,25 @@
+---
+layout: ~
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>ixti's personal scratchpad</title>
+  <id>http://ixti.net/</id>
+  <updated>{{ site.time | date_to_xmlschema }}</updated>
+
+  <author>
+    <name>Aleksey V Zapparov</name>
+    <email>ixti@member.fsf.org</email>
+  </author>
+
+  {% for post in site.posts limit:10 %}
+  <entry>
+    <title>{{ post.title }}</title>
+    <link href="http://ixti.net/{{ post.url }}"/>
+    <id>http://ixti.net/{{ post.id }}</id>
+    <updated>{{ post.date | date_to_xmlschema }}</updated>
+    <summary type="html">{{ post.excerpt | xml_escape }}</summary>
+    <content type="html">{{ post.content | xml_escape }}</content>
+  </entry>
+  {% endfor %}
+</feed>
