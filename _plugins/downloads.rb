@@ -5,7 +5,7 @@
 # USAGE:
 #
 # Put necessary files under `_downloads/<uniq-name>/` diretory, and then use
-# {% downloadable <uniq-name> %} in your templates to get link to the zipball.
+# {{ <uniq-name> | zipball_link }} in your templates to get link to the zipball.
 #
 # Copyright (C) 2012 Aleksey V Zapparov (http://ixti.net/)
 #
