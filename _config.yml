@@ -10,6 +10,8 @@ redcarpet:
     - superscript
     - smart
 
+title: ixti's personal scratchpad
+
 assets:
   compress:
     css: sass
