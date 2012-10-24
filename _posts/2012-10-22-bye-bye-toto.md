@@ -11,12 +11,12 @@ project. So, I hope from now on, blogging will become easier for me. And
 I'll be posting more frequently once I'll finish some of the outstanding
 issues with my current blog setup...
 
-* I need a good categories/tags generation plugin (all existing are not good
-  enough for me, so I guess I'll end up writing my own).
-* I need to recreate `atom.xml` feed generator.
+* ~~I need a good categories/tags generation plugin (all existing are not good
+  enough for me, so I guess I'll end up writing my own).~~
+* ~~I need to recreate `atom.xml` feed generator.~~
 * Would be awesome to integrate QR code with URL generator from old blog into
   this one.
-* Integrate back disquss and move existing threads to the new locations.
+* ~~Integrate back disquss and move existing threads to the new locations.~~
 * Add `rake new_post`
 
 
