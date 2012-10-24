@@ -12,7 +12,7 @@
   <body>
     <header id="header">
       <h1><a href="/"><span>personal scratchpad</span></a></h1>
-      <div class="navbar">
+      <div id="top-navigation" class="navbar">
         <ul>
           <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
         </ul>
@@ -27,7 +27,7 @@
 
     {{ content }}
 
-    <ul id="archives-nav">
+    <ul id="bottom-navigation" class="navbar">
       {% for year in site.archive_years %}
         <li>{{ year | archive_link }}</li>
       {% endfor %}
