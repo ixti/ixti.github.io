@@ -14,8 +14,8 @@ issues with my current blog setup...
 * ~~I need a good categories/tags generation plugin (all existing are not good
   enough for me, so I guess I'll end up writing my own).~~
 * ~~I need to recreate `atom.xml` feed generator.~~
-* Would be awesome to integrate QR code with URL generator from old blog into
-  this one.
+* ~~Would be awesome to integrate QR code with URL generator from old blog into
+  this one.~~ *(Rejected: QRCode with RMagick was way too slow)*
 * ~~Integrate back disquss and move existing threads to the new locations.~~
 * Add `rake new_post`
 
