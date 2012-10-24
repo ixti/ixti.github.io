@@ -1,0 +1,15 @@
+.archives {
+  text-align: center;
+
+  ul {
+    list-style: none;
+
+    li:not(:last-child) {
+      margin-bottom: 1em;
+    }
+
+    .post-info {
+      margin: 0px;
+    }
+  }
+}

@@ -61,7 +61,7 @@ module Jekyll
         @site     = site
         @dirname  = site.tags_config.dirname
         @tag      = tag
-        @posts    = posts
+        @posts    = posts.sort_by { |p| p.date }.reverse
         @ext      = '.html'
 
         self.read_yaml(template.parent.to_s, template.basename.to_s)

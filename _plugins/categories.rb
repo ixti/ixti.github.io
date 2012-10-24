@@ -61,8 +61,11 @@ module Jekyll
         @site     = site
         @dirname  = site.categories_config.dirname
         @category = category
-        @posts    = posts
+        @posts    = posts.sort_by { |p| p.date }.reverse
         @ext      = '.html'
+
+        # make sure categoy is a String
+        @category = @category.join '/' if @category.is_a? Array
 
         self.read_yaml(template.parent.to_s, template.basename.to_s)
       end

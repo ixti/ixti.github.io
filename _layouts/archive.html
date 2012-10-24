@@ -2,12 +2,14 @@
 layout: default
 ---
 
-<h2>{{ page.title }}</h2>
-<ul class="archives">
-  {% for post in page.posts %}
-    <li>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-      {% include post-info.html %}
-    </li>
-  {% endfor %}
-</ul>
+<div class="archives">
+  <h2>{{ page.title }}</h2>
+  <ul>
+    {% for post in page.posts %}
+      <li>
+        <a href="{{ post.url }}">{{ post.title }}</a>
+        {% include post-info.html %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
