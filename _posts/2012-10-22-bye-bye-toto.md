@@ -17,7 +17,7 @@ issues with my current blog setup...
 * ~~Would be awesome to integrate QR code with URL generator from old blog into
   this one.~~ *(Rejected: QRCode with RMagick was way too slow)*
 * ~~Integrate back disquss and move existing threads to the new locations.~~
-* Add `rake new_post`
+* ~~Add `rake new_post`~~
 
 
 [1]: https://github.com/ixti/toto
