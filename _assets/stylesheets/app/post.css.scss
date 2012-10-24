@@ -28,35 +28,3 @@
     text-decoration: underline;
   }
 }
-
-#posts-nav {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 1px 0px 0px 0px;
-  font-family: 'Open Sans Condensed', 'Open Sans', sans-serif;
-  padding: 0.5em 0px;
-  margin: 1em 0px -0.8em;
-  text-transform: uppercase;
-
-  list-style: none;
-
-  a {
-    color: #555;
-  }
-
-  .next {
-    float: left;
-    text-align: left;
-  }
-
-  .prev {
-    float: right;
-    text-align: right;
-  }
-
-  &:after {
-    content: '';
-    display: table;
-    clear: both;
-  }
-}
