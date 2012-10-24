@@ -22,13 +22,13 @@ zipballs:
   dirname: downloads
 
 tags:
-  layout: archive
+  template: _layouts/archive
 
 categories:
-  layout: archive
+  template: _layouts/archive
 
 archives:
-  layout: archive
+  template: _layouts/archive
 
 exclude:
   - Gemfile
