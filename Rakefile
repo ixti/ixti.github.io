@@ -50,7 +50,7 @@ task :new do
   title     = say_what?('Title: ')
   filename  = "_posts/#{Time.now.strftime('%Y-%m-%d')}-#{sluggize title}.md"
 
-  if File.exist? post_path
+  if File.exist? filename
     puts "I can't create the post: \e[33m#{filename}\e[0m"
     puts "  \e[31m- Path already exists.\e[0m"
     exit 1
@@ -73,7 +73,7 @@ task :new do
   end
 
   puts "a new post was created for you at:"
-  puts "  \e[32m#{post_path}\e[0m"
+  puts "  \e[32m#{filename}\e[0m"
 end
 
 if !$editor.empty?
