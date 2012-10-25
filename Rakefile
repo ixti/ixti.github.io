@@ -13,6 +13,11 @@ def say_what? message
 end
 
 
+def sluggize str
+  str.downcase.gsub(/[^a-z0-9]+/, '-');
+end
+
+
 desc "Generate blog files"
 task :generate do
   Jekyll::Site.new(Jekyll.configuration({
@@ -43,7 +48,7 @@ $editor = ENV['EDITOR'] || ""
 desc "Create a new post"
 task :new do
   title     = say_what?('Title: ')
-  filename  = "_posts/#{Time.now.strftime('%Y-%m-%d')}-#{title.to_url}.md"
+  filename  = "_posts/#{Time.now.strftime('%Y-%m-%d')}-#{sluggize title}.md"
 
   if File.exist? post_path
     puts "I can't create the post: \e[33m#{filename}\e[0m"
