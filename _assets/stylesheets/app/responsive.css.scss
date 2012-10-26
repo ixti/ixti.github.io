@@ -10,7 +10,7 @@
     width: 465px;
   }
 
-  .navbar li {
+  #top-navigation li {
     display: block;
   }
 }
@@ -33,12 +33,12 @@
     }
   }
 
-  .navbar ul:first-child, .navbar ul:last-child, .navbar ul {
+  #top-navigation ul:first-child, #top-navigation ul:last-child, #top-navigation ul {
     float: none !important;
     text-align: center;
   }
 
-  .navbar li {
+  #top-navigation li {
     display: block;
   }
 }
