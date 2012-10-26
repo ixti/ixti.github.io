@@ -12,7 +12,7 @@ when I decided to move files to another drive. Unfortunately, by some reason, I
 decided to run `fsck` before copying file on another drive. When I came in the
 morning my drive was not working properly anymore...
 
-So, I lost all my porn^Wphotos. It was impossible to mount it, and the syslog
+So, I lost all my ~~porn~~ photos. It was impossible to mount it, and the syslog
 was full of messages like `Buffer I/O error on device sdb`. Googling left me
 with sad feeling that I will never get my data recovered. But I was wrong and
 thanks to all developers of `safecopy`, `testdisk`, `sleuthkit` and `autopsy`.
