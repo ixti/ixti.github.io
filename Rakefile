@@ -42,16 +42,13 @@ task :publish => [:generate] do
 end
 
 
-$editor = ENV['EDITOR'] || ""
-
-
 desc "Create a new post"
 task :new do
   title     = say_what?('Title: ')
   filename  = "_posts/#{Time.now.strftime('%Y-%m-%d')}-#{sluggize title}.md"
 
   if File.exist? filename
-    puts "I can't create the post: \e[33m#{filename}\e[0m"
+    puts "Can't create new post: \e[33m#{filename}\e[0m"
     puts "  \e[31m- Path already exists.\e[0m"
     exit 1
   end
@@ -67,43 +64,6 @@ task :new do
     post.puts "Once upon a time..."
   end
 
-
-  if !$editor.empty? && 'Y' == say_what?('Edit? ').upcase[0]
-    system "#{$editor} #{filename}"
-  end
-
-  puts "a new post was created for you at:"
+  puts "A new post was created for at:"
   puts "  \e[32m#{filename}\e[0m"
-end
-
-if !$editor.empty?
-  desc "Edit post"
-  task :edit do
-    posts     = Dir["_posts/*.md"].sort_by{ |f| File.basename f }.reverse!
-    per_page  = 9;
-
-    begin
-      page = posts.slice!(0, per_page)
-      page.each_with_index {|f, i| puts "%2d %s" % [i + 1, File.basename(f)]}
-
-      puts "Enter number to edit, or nothing to skip to next page"
-      id = say_what? "> "
-    end while posts.count > 0 && id.empty?
-
-    case
-      when "Q" == id.upcase
-        exit 0
-      when id.empty?
-        puts "no more posts"
-        exit 0
-      else
-        id = id.to_i
-        unless 0 < id && id < per_page
-          puts "wrong post number"
-          exit 1
-        end
-    end
-
-    system "#{$editor} #{page[id - 1]}"
-  end
 end
