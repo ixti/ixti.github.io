@@ -51,6 +51,48 @@ module Jekyll
     end
 
 
+    module PostPatch
+      def self.included base
+        # and then provide our own
+        base.send :include, InstanceMethods
+
+        base.class_eval do
+          alias_method :categories_without_better_autoguess, :categories
+          alias_method :categories, :categories_with_better_autoguess
+
+          alias_method :to_liquid_without_category, :to_liquid
+
+          def to_liquid
+            to_liquid_without_category.deep_merge({
+              'category' => categories.first
+            })
+          end
+        end
+      end
+
+      module InstanceMethods
+        def categories_with_better_autoguess
+          @categories ||= []
+
+          @categories = get_categories_from_data if @categories.empty?
+          @categories = get_categories_from_name if @categories.empty?
+
+          @categories
+        end
+
+        protected
+
+        def get_categories_from_data
+          self.data.pluralized_array('category', 'categories')
+        end
+
+        def get_categories_from_name
+          [ @name.split('/')[0...-1].reject{ |x| x.empty? }.join('/') ]
+        end
+      end
+    end
+
+
     class Page
       include Convertible
 
@@ -155,6 +197,7 @@ end
 
 
 Jekyll::Site.send :include, Jekyll::CategoriesPlugin::SitePatch
+Jekyll::Post.send :include, Jekyll::CategoriesPlugin::PostPatch
 
 
 Liquid::Template.register_filter Jekyll::CategoriesPlugin::Filters
