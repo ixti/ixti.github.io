@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'jekyll', :github => 'ixti/jekyll'
+gem 'jekyll', :github => 'mojombo/jekyll'
 gem 'jekyll-assets'
 gem 'rake'
 gem 'redcarpet'
