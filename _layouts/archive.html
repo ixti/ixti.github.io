@@ -7,7 +7,7 @@ layout: default
   <ul>
     {% for post in page.posts %}
       <li>
-        <a href="{{ post.url }}">{{ post.title }}</a>
+        <a href="{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
         {% include post-info.html %}
       </li>
     {% endfor %}
