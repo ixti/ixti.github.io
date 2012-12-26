@@ -11,10 +11,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,11 +28,10 @@
 // [1]: http://lxr.mozilla.org/mozilla/source/extensions/xml-rpc/src/nsXmlRpcClient.js
 
 
-(function (exports) {
+(function (global) {
   'use strict';
 
-  var noop = function () {},
-      logger = {warn: noop, error: noop},
+  var log = function () {},
       padding = '=',
       chrTable = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' +
                  '0123456789+/',
@@ -47,9 +46,10 @@
         41,42,43,44, 45,46,47,48, 49,50,51,-1, -1,-1,-1,-1
       ];
 
-  if (console) {
-    logger.warn = console.warn || console.error || console.log || noop;
-    logger.warn = console.error || console.warn || console.log || noop;
+  if (global.console && global.console.log) {
+    log = function (message) {
+      global.console.log(message);
+    };
   }
 
   // internal helpers //////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@
 
       if (-1 === value) {
         // Skip illegal characters and whitespace
-        logger.warn("Illegal characters (code=" + code + ") in position " + idx);
+        log("WARN: Illegal characters (code=" + code + ") in position " + idx);
       } else {
         // Collect data into leftdata, update bitcount
         leftdata = (leftdata << 6) | value;
@@ -165,14 +165,14 @@
 
     // If there are any bits left, the base64 string was corrupted
     if (leftbits) {
-      logger.error("Corrupted base64 string");
+      log("ERROR: Corrupted base64 string");
       return null;
     }
 
     return utf8Decode(bytes);
   }
 
-  exports.base64 = {encode: encode, decode: decode};
+  global.base64 = {encode: encode, decode: decode};
 }(window));
 
 
