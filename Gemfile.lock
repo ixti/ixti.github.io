@@ -1,8 +1,8 @@
 GIT
   remote: git://github.com/mojombo/jekyll.git
-  revision: ffc68bdd48dfa6af9ffec0cfe6f9a840a2169d87
+  revision: b56a2d1ab15f08a4594e9d7660da10bd17853d18
   specs:
-    jekyll (0.11.2)
+    jekyll (0.12.0)
       classifier (~> 1.3)
       directory_watcher (~> 1.1)
       kramdown (~> 0.13.4)
@@ -20,7 +20,7 @@ GEM
       multi_json (~> 1.0)
     fast-stemmer (1.0.1)
     hike (1.2.1)
-    jekyll-assets (0.1.1)
+    jekyll-assets (0.2.0)
       jekyll
       sprockets (~> 2.8)
     kramdown (0.13.8)
@@ -36,7 +36,7 @@ GEM
     rake (10.0.3)
     redcarpet (2.2.2)
     rubyzip (0.9.9)
-    sass (3.2.3)
+    sass (3.2.4)
     sprockets (2.8.2)
       hike (~> 1.2)
       multi_json (~> 1.0)
