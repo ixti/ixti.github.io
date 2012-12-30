@@ -14,7 +14,7 @@ end
 
 
 def sluggize str
-  str.downcase.gsub(/[^a-z0-9]+/, '-');
+  str.downcase.gsub(/[^a-z0-9]+/, '-').gsub(/^-|-$/, '');
 end
 
 
