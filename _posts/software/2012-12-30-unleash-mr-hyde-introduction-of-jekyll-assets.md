@@ -171,7 +171,7 @@ So now, we can say that we have [following structure][step-2] of assets:
     3 directories, 3 files
 
 
-##### Using assets in our templates
+##### Using assets
 
 Once our assets are ready, let's add `<link>` and `<script>` tags into our
 layout file. So our `<head>` will look like this:
@@ -241,6 +241,72 @@ You have also MIME-type specific versions of `asset_path`, such as:
 * `javascript_path`
 
 
+### Add vendors
+
+It's time to add some more assets. I don't wanna mess my own assets with vendors
+so I'm gonna create a `_assets/vendor` directory and put all vendor assets
+there. I'll show how to make plugin respect custom directories later. And here's
+a brief overview of my [assets now][step-3]:
+
+    % tree -F -L 2 --charset=UTF8 ./_assets/
+    ./_assets/
+    ├── images/
+    │   └── noise.png
+    ├── javascripts/
+    │   └── app.js.coffee
+    ├── stylesheets/
+    │   └── app.css.sass
+    └── vendor/
+        ├── bootstrap/
+        ├── fontello/
+        ├── jquery.js
+        └── modernizr.js
+
+    6 directories, 5 files
+
+So `bootstrap/` contains unpacked [Bootstrap in SASS][bootstrap-sass] zipball,
+`fontello/` contains custom generated symbol font and jQuery with Modernizr is
+just what it look like :D
+
+[bootstrap-sass]: https://github.com/jlong/sass-twitter-bootstrap/
+
+
+### Configure
+
+It's time to configure plug-in a little bit. As we added vendor assets under
+specific directory we will need to add it to the list of assets paths:
+
+``` yaml
+assets:
+  sources:
+    - _assets/images/
+    - _assets/javascripts/
+    - _assets/stylesheets/
+    - _assets/vendor/
+```
+
+Notice that all plug-in specific configuration options are kept under `assets`
+section. Let's also specify that we want to have compression enabled, so that
+our config file might look like:
+
+``` yaml
+assets:
+  sources:
+    - _assets/images/
+    - _assets/javascripts/
+    - _assets/stylesheets/
+    - _assets/vendor/
+  compress:
+    css:  sass
+    js:   uglifier
+```
+
+OK. Now, when we have [everything prepared][step-4], we are ready to start
+working with our assets...
+
+
 [step-0]: https://github.com/ixti/jekyll-assets-demo/tree/9880a5074fdf7cbb13a156045275abf0b3ce3861
 [step-1]: https://github.com/ixti/jekyll-assets-demo/tree/370c683dcd88b9cdee5f14f497ce5ac72c3e1d77
 [step-2]: https://github.com/ixti/jekyll-assets-demo/tree/3c29aaca28a7fe66a591b37bf1c01349590071f8
+[step-3]: https://github.com/ixti/jekyll-assets-demo/tree/b12bbb28fe98039e4fa97a3676885e2b850f1194
+[step-4]: https://github.com/ixti/jekyll-assets-demo/tree/677f951cad2fff4e4ad950741dc1b0ffcc28c96a
