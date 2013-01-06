@@ -14,9 +14,15 @@
     margin: 0px;
   }
 
-  dd:after {
-    content: "";
-    display: table;
+  dd {
+    &:after {
+      content: "";
+      display: table;
+    }
+
+    &:not(:last-child):after {
+      content: " ~ ";
+    }
   }
 
   a, a:visited {
@@ -24,7 +30,9 @@
     text-decoration: none;
   }
 
-  a:hover {
-    text-decoration: underline;
+  a {
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
