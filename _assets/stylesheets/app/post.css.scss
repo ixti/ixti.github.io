@@ -9,22 +9,6 @@
 
   font-style: italic;
 
-  dt, dd {
-    display: inline;
-    margin: 0px;
-  }
-
-  dd {
-    &:after {
-      content: "";
-      display: table;
-    }
-
-    &:not(:last-child):after {
-      content: " ~ ";
-    }
-  }
-
   a, a:visited {
     color: #777;
     text-decoration: none;
