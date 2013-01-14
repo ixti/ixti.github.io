@@ -1,0 +1,21 @@
+@import "compass";
+
+
+.downloads {
+  @include border-radius(0.25em);
+
+  margin:           1em 0px;
+  padding:          1em;
+  text-align:       center;
+
+  ul {
+    list-style: none;
+    margin:     0px;
+    padding:    0px;
+  }
+
+  * {
+    font-size:  1em;
+    margin:     0.5em 0px;
+  }
+}

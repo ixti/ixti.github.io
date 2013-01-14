@@ -1,0 +1,102 @@
+#header {
+  h1 { text-align: center; }
+  a { text-decoration: none; }
+
+  & > h1 > a {
+    @include respond-to("mobile") {
+      display:  inline-block;
+      height:   120px;
+      margin:   0px auto;
+      width:    300px;
+    }
+
+    span {
+      @include respond-to("mobile") { display: none; }
+    }
+  }
+}
+
+
+.navbar {
+  border-style:   solid;
+  font-family:    'Open Sans Condensed', 'Open Sans', sans-serif;
+  font-size:      1.125em;
+  padding:        0.796em 0px;
+  text-transform: uppercase;
+
+  li {
+    display:  inline;
+    margin:   0px 0.414em;
+  }
+}
+
+
+#top-navigation {
+  border-width: 1px 0px;
+
+  ul {
+    list-style: none;
+    margin:     0px;
+    padding:    0px;
+
+    @include respond-to("mobile") {
+      float:      none !important;
+      text-align: center;
+    }
+
+    &:first-child {
+      float:      left;
+      text-align: left;
+
+      @include respond-to("mobile") {
+        float:      none !important;
+        text-align: center;
+      }
+    }
+
+    &:last-child {
+      float:      right;
+      text-align: right;
+
+      @include respond-to("mobile") {
+        float:      none !important;
+        text-align: center;
+      }
+    }
+  }
+
+  li {
+    @include respond-to("tablet portrait") { display: block; }
+    @include respond-to("mobile") { display: block; }
+  }
+
+  &:before, &:after {
+    content: "";
+    display: table;
+  }
+
+  &:after {
+    clear: both;
+  }
+}
+
+
+#bottom-navigation {
+  border-width: 1px 0px 0px;
+  margin:       1em 0px 0px;
+  text-align:   center;
+
+  li {
+    margin: 0px;
+
+    &:not(:first-child):before {
+      content: ' | ';
+    }
+  }
+}
+
+
+#footer {
+  font-size:  0.707em;
+  text-align: center;
+}

@@ -1,10 +1,16 @@
 //= require webfonts
 //= require normalize
-//= require pygments
-//= require app/base
-//= require app/layout
-//= require app/post
-//= require app/downloads
-//= require app/archives
-//= require app/disqus
-//= require app/responsive
+
+@import "respond-to";
+
+$breakpoints: 'tablet landscape' (768px 991px),
+              'tablet portrait' (480px 767px),
+              'mobile' (max-width 479px);
+
+@import "app/base";
+@import "app/layout";
+@import "app/post";
+@import "app/downloads";
+@import "app/archives";
+@import "app/themes/light";
+@import "app/themes/dark";

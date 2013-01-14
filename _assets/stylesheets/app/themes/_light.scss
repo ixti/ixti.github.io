@@ -1,0 +1,98 @@
+@import "compass";
+@import "light/pygments";
+
+
+.light {
+
+  //
+  // base
+  //
+
+
+  background-color: #fff;
+  color:            #222;
+
+
+  a {
+    color: #33c;
+
+    &:hover {
+      text-shadow: 0 0 2px #99c;
+    }
+  }
+
+
+  pre, .highlight pre {
+    background-color: #fafafa;
+    border:           1px solid #ccc;
+  }
+
+
+  //
+  // layout
+  //
+
+
+  #header > h1 > a {
+    @include respond-to("mobile") {
+      background-image: url(asset_path('ixti-light.gif'));
+    }
+  }
+
+
+  #header, .navbar {
+    a { color: #000; }
+  }
+
+
+  .navbar {
+    border-color: #aaa;
+  }
+
+  #footer {
+    border-top: 1px solid #aaa;
+    color:      #555;
+
+    a { color: #222; }
+  }
+
+
+  //
+  // post
+  //
+
+
+  .post-info {
+    color: #777;
+
+    a { color: #555; }
+  }
+
+
+  //
+  // downloads
+  //
+
+
+  .downloads {
+    @include single-box-shadow(#eee, 0px, 0px, 32px, 0px, true);
+
+    background-color: #fafafa;
+    border:           1px solid #ccc;
+  }
+
+
+  //
+  // disqus
+  //
+
+
+  #disqus_thread {
+    @include border-radius(0.25em);
+
+    background-color: #fafafa;
+    border:           1px solid #ccc;
+    padding:          1em;
+  }
+
+}

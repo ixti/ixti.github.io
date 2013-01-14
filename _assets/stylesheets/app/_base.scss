@@ -1,0 +1,52 @@
+@import "compass";
+
+
+body {
+  font:   100%/1.414 'Open Sans', sans-serif;
+  margin: 0px auto 5.653em;
+  width:  960px;
+
+  @include respond-to('tablet landscape') { width: 753px; }
+  @include respond-to('tablet portrait') { width: 465px; }
+  @include respond-to('mobile') { width: 300px; }
+
+  /* Stops Mobile Safari from auto-adjusting font-sizes */
+  -webkit-text-size-adjust: 100%;
+}
+
+
+// Modular Scale
+//
+//    Normal:      16px @ 1:1.414
+//    Important:   18px @ 1:1.414
+//
+// http://modularscale.com/scale/?px1=16&px2=18&ra1=1.414&ra2=0
+
+
+h1 { font-size: 3.998em; line-height: 1.125em;}
+h2 { font-size: 2.249em; }
+h3 { font-size: 1.999em; }
+h4 { font-size: 1.591em; }
+h5 { font-size: 1.414em; }
+h6 { font-size: 1.125em; }
+
+
+pre {
+  overflow:     auto;
+  white-space:  pre;
+}
+
+
+pre, .highlight pre {
+  @include border-radius(0.25em);
+
+  font-family:  monospace;
+  font-size:    0.796em;
+  padding:      1em;
+}
+
+
+::selection         { background: rgb(50, 50, 50); color: rgb(200, 200, 200); }
+::-moz-selection    { background: rgb(50, 50, 50); color: rgb(200, 200, 200); }
+img::selection      { background: transparent; }
+img::-moz-selection { background: transparent; }

@@ -1,0 +1,98 @@
+@import "compass";
+@import "dark/pygments";
+
+
+.dark {
+
+  //
+  // base
+  //
+
+
+  background-color: #222;
+  color:            #bbb;
+
+
+  a {
+    color: #74b4c2;
+
+    &:hover {
+      text-shadow: 0 0 2px #c9e2e7;
+    }
+  }
+
+
+  pre, .highlight pre {
+    background-color: #1a1a1a;
+    border:           1px solid #333;
+  }
+
+
+  //
+  // layout
+  //
+
+
+  #header > h1 > a {
+    @include respond-to("mobile") {
+      background-image: url(asset_path('ixti-dark.gif'));
+    }
+  }
+
+
+  #header, .navbar {
+    a { color: #bbb; }
+  }
+
+
+  .navbar {
+    border-color: #555;
+  }
+
+  #footer {
+    border-top: 1px solid #555;
+    color:      #444;
+
+    a { color: #777; }
+  }
+
+
+  //
+  // post
+  //
+
+
+  .post-info {
+    color: #555;
+
+    a { color: #777; }
+  }
+
+
+  //
+  // downloads
+  //
+
+
+  .downloads {
+    @include single-box-shadow(#111, 0px, 0px, 32px, 0px, true);
+
+    background-color: #1a1a1a;
+    border:           1px solid #333;
+  }
+
+
+  //
+  // disqus
+  //
+
+
+  #disqus_thread {
+    @include border-radius(0.25em);
+
+    background-color: #eee;
+    border:           1px solid #ccc;
+    padding:          1em;
+  }
+
+}
