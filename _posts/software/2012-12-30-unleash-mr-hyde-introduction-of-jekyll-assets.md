@@ -15,7 +15,7 @@ how to enable jekyll-assets for your blog...
 
 [jekyll-assets]:  http://ixti.net/jekyll-assets/
 [jekyll]:         http://jekyllrb.com/
-[otopress]:       http://octopress.org/
+[octopress]:      http://octopress.org/
 [imathis]:        https://twitter.com/imathis/status/284089936884420608
 
 As I said before jekyll-assets is a plug-in for Jekyll and Octopress. Setup
