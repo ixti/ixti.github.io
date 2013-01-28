@@ -1,7 +1,7 @@
 <ul class="post-info">
   <li>Date: {{ post.date | date_to_string }}</li>
 
-  {% if post.category %}
+  {% if post.category and post.category != empty %}
     <li>Category: {{ post.category | category_link }}</li>
   {% endif %}
 
