@@ -23,7 +23,7 @@ body {
 // http://modularscale.com/scale/?px1=16&px2=18&ra1=1.414&ra2=0
 
 
-h1 { font-size: 3.998em; line-height: 1.125em;}
+h1 { font-size: 3.998em; line-height: 1.125em; }
 h2 { font-size: 2.249em; }
 h3 { font-size: 1.999em; }
 h4 { font-size: 1.591em; }
@@ -32,17 +32,28 @@ h6 { font-size: 1.125em; }
 
 
 pre {
+  @include box-shadow(rgba(black, 0.1) 0px 0px 5px);
+
   overflow:     auto;
   white-space:  pre;
 }
 
 
-pre, .highlight pre {
+pre   { padding: 1em; }
+code  { padding: 0.125em 0.398em; }
+
+
+pre, code {
   @include border-radius(0.25em);
 
-  font-family:  monospace;
-  font-size:    0.796em;
-  padding:      1em;
+  font-size: 0.796em;
+
+  code {
+    @include border-radius(0px);
+
+    font-size:  1em;
+    padding:    0px;
+  }
 }
 
 

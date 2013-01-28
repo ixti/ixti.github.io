@@ -22,9 +22,13 @@
   }
 
 
-  pre, .highlight pre {
+  pre, code {
     background-color: #fafafa;
     border:           1px solid #ccc;
+
+    code {
+      border: 0px none transparent;
+    }
   }
 
 
