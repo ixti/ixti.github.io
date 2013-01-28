@@ -32,7 +32,7 @@ h6 { font-size: 1.125em; }
 
 
 pre {
-  @include box-shadow(rgba(black, 0.1) 0px 0px 5px);
+  @include single-box-shadow(rgba(black, 0.1), 0px, 0px, 5px);
 
   overflow:     auto;
   white-space:  pre;
@@ -55,6 +55,9 @@ pre, code {
     padding:    0px;
   }
 }
+
+
+.center { text-align: center; }
 
 
 ::selection         { background: rgb(50, 50, 50); color: rgb(200, 200, 200); }
