@@ -154,7 +154,7 @@ something like this:
 ``` sass
 body
   background-color: #eee
-  background-image: url(image_path('noise.png'))
+  background-image: url(asset_path('noise.png'))
 ```
 
 Notice that despite the fact that `noise.png` is kept under different directory
@@ -212,7 +212,7 @@ more funky. Here's what our `app.css.sass` will look like after all:
 
 body
   background-color: #eee
-  background-image: url(image_path('noise.png'))
+  background-image: url(asset_path('noise.png'))
 
 
 #content
@@ -354,15 +354,6 @@ You can use following helpers/methods inside your ERB, SASS and SCSS files:
 * `asset_data_uri(asset_logical_name)`: Returns encoded Base64 data URI. Use it
   to embed images into your stylesheets.
 * `asset_path(asset_logical_name)`: Returns URL of compiled asset.
-
-You have also MIME-type specific versions of `asset_path`, such as:
-
-* `image_path`
-* `audio_path`
-* `video_path`
-* `font_path`
-* `stylesheet_path`
-* `javascript_path`
 
 
 ### Let's go crazy now!
