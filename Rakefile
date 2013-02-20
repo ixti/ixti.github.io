@@ -56,8 +56,6 @@ task :new do
   File.open(filename, "w") do |post|
     post.puts "---"
     post.puts "layout:    post"
-    post.puts "category:  ~"
-    post.puts "tags:      []"
     post.puts "title:     #{title}"
     post.puts "---"
     post.puts ""
