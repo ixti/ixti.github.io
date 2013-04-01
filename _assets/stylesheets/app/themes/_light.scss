@@ -92,11 +92,9 @@
 
 
   #disqus_thread {
-    @include border-radius(0.25em);
-
-    background-color: #fafafa;
-    border:           1px solid #ccc;
-    padding:          1em;
+    border-top:   8px solid #ccc;
+    padding:      1em;
+    margin-top:   4.497em;
   }
 
 }
