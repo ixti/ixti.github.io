@@ -56,6 +56,7 @@ do ($ = jQuery, window) ->
 
     switcher.onActivate = () ->
       $toggler.text options.themes[switcher.nextTheme()]
+      window.DISQUS.reset({ reload: true }) if window.DISQUS
 
     $toggler.on "click", (event) ->
       switcher.toggle()
