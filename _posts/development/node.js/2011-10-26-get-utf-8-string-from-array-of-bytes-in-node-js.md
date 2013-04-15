@@ -1,7 +1,7 @@
 ---
 layout:   post
 category: development/node.js
-tags:     utf-8 decode string javascript
+tags:     utf8 decode string javascript
 title:    Get UTF-8 string from array of bytes in Node.JS
 ---
 
