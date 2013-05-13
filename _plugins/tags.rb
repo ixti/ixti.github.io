@@ -118,6 +118,10 @@ module Jekyll
         true
       end
 
+      def uses_relative_permalinks
+        false
+      end
+
       def inspect
         "#<Jekyll:TagsPlugin:Page @tag=#{@tag.inspect}>"
       end
