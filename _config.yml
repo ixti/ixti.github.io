@@ -16,6 +16,7 @@ assets:
   compress:
     css: sass
     js:  uglifier
+  cache_assets: true
 
 zipballs:
   sources: _downloads
