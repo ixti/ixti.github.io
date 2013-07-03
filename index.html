@@ -10,7 +10,7 @@ layout: default
     </header>
 
     <div>
-      {{ post.excerpt }}
+      {{ post.excerpt | markdownify }}
     </div>
 
     <a href="{{ post.url }}" title="{{ post.title }}">Read more&hellip;</a>
