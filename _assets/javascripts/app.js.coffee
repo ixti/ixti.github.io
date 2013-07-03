@@ -56,7 +56,9 @@ do ($ = jQuery, window) ->
 
     switcher.onActivate = () ->
       $toggler.text options.themes[switcher.nextTheme()]
-      window.DISQUS.reset({ reload: true }) if window.DISQUS
+
+      # disqus is enabled for posts only
+      window.DISQUS.reset({ reload: true }) if window.disqus_shortname
 
     $toggler.on "click", (event) ->
       switcher.toggle()
@@ -71,8 +73,9 @@ do ($ = jQuery, window) ->
     injectScript "http://www.google-analytics.com/ga.js"
 
     # Disqus
-    window.disqus_shortname = "ixti";
-    injectScript "http://#{window.disqus_shortname}.disqus.com/embed.js"
+    if 0 < $("#disqus_thread").length
+      window.disqus_shortname = "ixti";
+      injectScript "http://#{window.disqus_shortname}.disqus.com/embed.js"
 
     # Light/Dark theme switcher
     ThemeSwitch.init
@@ -82,4 +85,4 @@ do ($ = jQuery, window) ->
       toggler: $("#js-theme-switcher > a")
 
     # Notify that user has JS
-    $("html").removeClass("nojs").addClass("js");
+    $("html").addClass("js").removeClass("nojs");
