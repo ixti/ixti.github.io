@@ -1,6 +1,5 @@
-@media only screen and (max-width: 479px) {
-  #header > h1 > a {
-    background-image: url(asset_path('ixti.gif'));
+#header > h1 > a {
+  @include respond-to("mobile") {
     display: inline-block;
     height: 120px;
     margin: 0px auto;
