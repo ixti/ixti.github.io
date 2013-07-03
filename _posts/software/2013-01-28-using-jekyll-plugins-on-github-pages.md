@@ -13,7 +13,7 @@ this instruction applies to any third-party plugin...
 
 [jekyll-assets]:  http://ixti.net/jekyll-assets/
 [gh-pages]:       http://pages.github.com/
-[google-info]:    https://www.google.com/search?oqgithub+pages
+[google-info]:    https://www.google.com/search?q=github+pages
 [jekyll]:         http://jekyllrb.com/
 
 As I said above, GitHub Pages does not allows you to use custom plugins, so the
