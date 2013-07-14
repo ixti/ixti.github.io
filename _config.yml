@@ -13,10 +13,9 @@ redcarpet:
 title: ixti's personal scratchpad
 
 assets:
-  compress:
-    css: sass
-    js:  uglifier
-  cache_assets: true
+  css_compressor: sass
+  js_compressor:  uglifier
+  cache:          true
 
 zipballs:
   sources: _downloads
