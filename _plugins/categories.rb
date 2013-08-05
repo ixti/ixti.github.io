@@ -62,8 +62,8 @@ module Jekyll
 
           alias_method :to_liquid_without_category, :to_liquid
 
-          def to_liquid
-            to_liquid_without_category.deep_merge({
+          def to_liquid(*args)
+            to_liquid_without_category(*args).deep_merge({
               'category' => categories.first
             })
           end
