@@ -1,5 +1,6 @@
 ---
 layout:    post
+category:  software
 tags:      [jekyll, plugins, github, publish]
 title:     Using Jekyll plugins on GitHub Pages
 ---

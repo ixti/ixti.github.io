@@ -1,5 +1,6 @@
 ---
 layout:    post
+category:  development
 tags:      [ snippet, mongodb, index, javascript ]
 title:     Get MongoDB existing indexes
 ---

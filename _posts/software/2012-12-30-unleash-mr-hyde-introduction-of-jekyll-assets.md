@@ -1,5 +1,6 @@
 ---
 layout:    post
+category:  software
 tags:      blog jekyll octopress plugin assets ruby
 title:     Unleash Mr.Hyde! Introduction of Jekyll-Assets.
 ---
