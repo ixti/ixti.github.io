@@ -38,7 +38,7 @@ require 'set'
 
 
 # 3rd-party
-require 'zip/zip'
+require 'zip'
 
 
 module Jekyll
@@ -94,7 +94,7 @@ module Jekyll
         FileUtils.mkdir_p File.dirname(dest_path)
         FileUtils.rm_f dest_path if File.exists? dest_path
 
-        Zip::ZipFile.open(dest_path, Zip::ZipFile::CREATE) do |zipfile|
+        Zip::File.open(dest_path, Zip::File::CREATE) do |zipfile|
           @source.find do |file|
             zipfile.add(file.relative_path_from(@source.parent).to_s, file.to_s)
           end
