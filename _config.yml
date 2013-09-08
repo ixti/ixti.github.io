@@ -13,6 +13,11 @@ redcarpet:
 title: ixti's personal scratchpad
 
 assets:
+  sources:
+    - _assets/images
+    - _assets/javascripts
+    - _assets/stylesheets
+    - _assets/posts
   css_compressor: sass
   js_compressor:  uglifier
   cache:          true

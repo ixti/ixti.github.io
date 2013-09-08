@@ -16,10 +16,7 @@ itself and feeds to `gridlist` function, which returns `snd` element of chosen
 tuple. That means you can easily write your own definitions that will allow to
 provide nice names for menu elements. So it will look something like this:
 
-<div class="center">
-  <img src="{% asset_path posts/2013-09/modified-spawnselected.png %}"
-       alt="spawnSelected' in action screenshot" />
-</div>
+<div class="center">{% image 2013-09/modified-spawnselected.png %}</div>
 
 Let's import module first:
 

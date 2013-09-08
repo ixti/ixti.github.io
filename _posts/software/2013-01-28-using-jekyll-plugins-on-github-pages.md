@@ -48,10 +48,7 @@ Repo preparation is very simple, just create a `source` branch in your repo:
 
 Now as you have created `source` branch you can make it _default_ on GitHub:
 
-<div class="center">
-  <img src="{% asset_path posts/2013-01/github-repo-settings.png %}"
-       alt="Repository Settings Screenshot" />
-</div>
+<div class="center">{% image 2013-01/github-repo-settings.png %}</div>
 
 
 #### Automate publishing
