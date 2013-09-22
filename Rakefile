@@ -1,10 +1,9 @@
 require "rubygems"
-require "bundler/setup"
 require "shellwords"
-require "yaml"
+require "tmpdir"
 
-
-Bundler.require
+require "bundler/setup"
+require "jekyll"
 
 
 def say_what? message

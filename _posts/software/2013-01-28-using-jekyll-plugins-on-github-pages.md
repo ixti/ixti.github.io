@@ -58,6 +58,14 @@ master branch. But doing it manually is a pain, so let's add simple rake task.
 Create (if you don't have one yet) a Rakefile and add following into it:
 
 ``` ruby
+require "rubygems"
+require "shellwords"
+require "tmpdir"
+
+require "bundler/setup"
+require "jekyll"
+
+
 # Change your GitHub reponame
 GITHUB_REPONAME = "ixti/ixti.github.com"
 
@@ -101,6 +109,14 @@ There's no extra repo preapration steps needed. All that you'll need is a
 similar, rake task with tiny changes in it:
 
 ``` ruby
+require "rubygems"
+require "shellwords"
+require "tmpdir"
+
+require "bundler/setup"
+require "jekyll"
+
+
 # Change your GitHub reponame
 GITHUB_REPONAME = "ixti/jekyll-assets"
 
