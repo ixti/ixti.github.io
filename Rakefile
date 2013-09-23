@@ -1,5 +1,4 @@
 require "rubygems"
-require "shellwords"
 require "tmpdir"
 
 require "bundler/setup"
@@ -34,7 +33,7 @@ task :publish => [:generate] do
     system "git init"
     system "git add ."
     message = "Site updated at #{Time.now.utc}"
-    system "git commit -m #{message.shellescape}"
+    system "git commit -m #{message.inspect}"
     system "git remote add origin git@github.com:ixti/ixti.github.com.git"
     system "git push origin master --force"
   end
