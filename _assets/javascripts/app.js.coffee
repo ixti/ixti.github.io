@@ -23,39 +23,42 @@ do ($ = jQuery, window) ->
         right:            "0px"
         backgroundColor:  "white"
 
-      @active = do (id = store.get "theme") =>
-        if 0 <= $.inArray(id, @themes) then id else @themes[0]
+      @active = do =>
+        id = store.get("theme") || $("body").data("default-theme")
+        $.grep(@themes, (o) -> o.id == id) || @themes[0]
 
       @reset()
 
     inactive: () ->
-      $.grep @themes, (id) => id != @active
+      $.grep @themes, (o) => o.id != @active.id
 
     nextTheme: () ->
-      @inactive()[0]
+      @inactive().shift()
 
     toggle: () ->
       @themes = @inactive().concat [@active]
       @activate @themes[0]
 
     reset: () ->
-      $("body").removeClass(@themes.join " ").addClass @active
+      @ids ||= $.map @themes, (o) -> o.id
+      $("body").removeClass(@ids.join " ").addClass @active.id
+
 
     activate: (@active) ->
+      @overlay.css({ backgroundColor: @active.overlayColor })
       @overlay.fadeIn "normal", () =>
+        store.set "theme", @active.id
         @reset()
-        store.set "theme", @active
         @onActivate() if @onActivate
         @overlay.fadeOut "slow"
 
 
   ThemeSwitch.init = (options) ->
-    $toggler  = $ options.toggler
-    themeIds  = $.map options.themes, (_, id) -> id
-    switcher  = new ThemeSwitch themeIds, options.overlayClass
+    $toggler = $ options.toggler
+    switcher = new ThemeSwitch options.themes, options.overlayClass
 
     switcher.onActivate = () ->
-      $toggler.text options.themes[switcher.nextTheme()]
+      $toggler.text switcher.nextTheme().title
 
       # disqus is enabled for posts only
       window.DISQUS.reset({ reload: true }) if window.disqus_shortname
@@ -64,25 +67,24 @@ do ($ = jQuery, window) ->
       switcher.toggle()
       false
 
-    $toggler.text options.themes[switcher.nextTheme()]
+    $toggler.text switcher.nextTheme().title
 
 
   $ ->
     # Google Analytics
-    window._gaq = [ ["_setAccount", "UA-35573678-1"], ["_trackPageview"] ];
+    window._gaq = [ ["_setAccount", "UA-35573678-1"], ["_trackPageview"] ]
     injectScript "http://www.google-analytics.com/ga.js"
 
     # Disqus
     if 0 < $("#disqus_thread").length
-      window.disqus_shortname = "ixti";
+      window.disqus_shortname = "ixti"
       injectScript "http://#{window.disqus_shortname}.disqus.com/embed.js"
 
     # Light/Dark theme switcher
     ThemeSwitch.init
-      themes:
-        light: "Light Theme"
-        dark:  "Dark Theme"
+      themes: [{ id: "light", title: "Light Theme", overlayColor: "#222" },
+               { id: "dark",  title: "Dark Theme",  overlayColor: "#fff" }]
       toggler: $("#js-theme-switcher > a")
 
     # Notify that user has JS
-    $("html").addClass("js").removeClass("nojs");
+    $("html").addClass("js").removeClass("nojs")
