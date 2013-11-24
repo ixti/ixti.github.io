@@ -58,7 +58,7 @@ r/r 8651063:	INCITS+ISO+IEC+14882-2003.pdf
 ...
 ```
 
-You can read details on the output format on a [fls wiki page](fls-wiki). But in
+You can read details on the output format on a [fls wiki page][fls-wik]. But in
 short I needed all dirs/files that are not deleted, so the final command was:
 
 ```
