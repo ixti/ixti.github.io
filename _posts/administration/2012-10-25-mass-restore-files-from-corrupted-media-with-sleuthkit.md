@@ -77,12 +77,13 @@ that did all the dirty work for me:
 IMAGE=$1
 LIST=$2
 DEST=$3
+HT=`printf '\x09'`
 
 cat $LIST | while read line; do
    filetype=`echo "$line" | awk {'print $1'}`
    filenode=`echo "$line" | awk {'print $2'}`
    filenode=${filenode%:}
-   filename=`echo "$line" | cut -f 2 -d '	'`
+   filename=`echo "$line" | cut -f 2 -d "$HT"`
 
    if [ $filetype == "r/r" ]; then
       echo "$filename"
