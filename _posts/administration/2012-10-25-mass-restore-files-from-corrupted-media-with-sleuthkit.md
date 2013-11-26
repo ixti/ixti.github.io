@@ -79,17 +79,17 @@ LIST=$2
 DEST=$3
 HT=`printf '\x09'`
 
-cat $LIST | while read line; do
-   filetype=`echo "$line" | awk {'print $1'}`
-   filenode=`echo "$line" | awk {'print $2'}`
-   filenode=${filenode%:}
-   filename=`echo "$line" | cut -f 2 -d "$HT"`
+ca  t $LIST | while read line; do
+    filetype=`echo "$line" | awk {'print $1'}`
+    filenode=`echo "$line" | awk {'print $2'}`
+    filenode=${filenode%:}
+    filename=`echo "$line" | cut -f 2 -d "$HT"`
 
-   if [ $filetype == "r/r" ]; then
-      echo "$filename"
-      mkdir -p "`dirname "$DEST/$filename"`"
-      icat -f ext2 -r -s $IMAGE "$filenode" > "$DEST/$filename"
-   fi
+    if [ $filetype == "r/r" ]; then
+        echo "$filename"
+        mkdir -p "`dirname "$DEST/$filename"`"
+        icat -f ext2 -r -s $IMAGE "$filenode" > "$DEST/$filename"
+    fi
 done
 ```
 
@@ -99,6 +99,26 @@ And again, `man icat` for details ;))
 ##### That's all!
 
 Hope this will help somebody. And I hope I will never need it by myself. ;))
+
+
+##### UPDATE (Tue 26 Nov 2013 11:22:34 PM CET)
+
+If files extractor above doesn't work for you, you might want try version,
+kindly proposed by Dan O'Day in comments:
+
+``` bash
+IMAGE=$1
+LIST=$2
+DEST=$3
+
+while IFS=$' \t:' read filetype filenode filename; do
+    if [ "$filetype" = "r/r" ]; then
+        echo "$filename"
+        mkdir -p "`dirname "$DEST/$filename"`"
+        icat -f ntfs -r -s $IMAGE "$filenode" > "$DEST/$filename"
+    fi
+done < $LIST
+```
 
 
 [fls-wiki]: http://wiki.sleuthkit.org/index.php?title=Fls
