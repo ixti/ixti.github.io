@@ -79,7 +79,7 @@ LIST=$2
 DEST=$3
 HT=`printf '\x09'`
 
-ca  t $LIST | while read line; do
+cat $LIST | while read line; do
     filetype=`echo "$line" | awk {'print $1'}`
     filenode=`echo "$line" | awk {'print $2'}`
     filenode=${filenode%:}
