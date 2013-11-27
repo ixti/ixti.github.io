@@ -3,6 +3,7 @@
 #= require vendor/jquery
 
 do ($ = jQuery, window) ->
+
   injectScript = (src) ->
     $("<script>").attr({
       type:   "text/javascript"
@@ -25,19 +26,23 @@ do ($ = jQuery, window) ->
 
       @active = do =>
         id = store.get("theme") || $("body").data("default-theme")
-        $.grep(@themes, (o) -> o.id == id) || @themes[0]
+        $.grep(@themes, (o) -> o.id == id)[0] || @themes[0]
 
       @reset()
+
 
     inactive: () ->
       $.grep @themes, (o) => o.id != @active.id
 
+
     nextTheme: () ->
       @inactive().shift()
+
 
     toggle: () ->
       @themes = @inactive().concat [@active]
       @activate @themes[0]
+
 
     reset: () ->
       @ids ||= $.map @themes, (o) -> o.id
@@ -53,15 +58,13 @@ do ($ = jQuery, window) ->
         @overlay.fadeOut "slow"
 
 
-  ThemeSwitch.init = (options) ->
-    $toggler = $ options.toggler
-    switcher = new ThemeSwitch options.themes, options.overlayClass
+  ThemeSwitch.init = (toggler, themes) ->
+    $toggler = $ toggler
+    switcher = new ThemeSwitch themes
 
     switcher.onActivate = () ->
       $toggler.text switcher.nextTheme().title
-
-      # disqus is enabled for posts only
-      window.DISQUS.reset({ reload: true }) if window.disqus_shortname
+      window.DISQUS.reset({ reload: true }) if window.DISQUS
 
     $toggler.on "click", (event) ->
       switcher.toggle()
@@ -81,10 +84,10 @@ do ($ = jQuery, window) ->
       injectScript "http://#{window.disqus_shortname}.disqus.com/embed.js"
 
     # Light/Dark theme switcher
-    ThemeSwitch.init
-      themes: [{ id: "light", title: "Light Theme", overlayColor: "#222" },
-               { id: "dark",  title: "Dark Theme",  overlayColor: "#fff" }]
-      toggler: $("#js-theme-switcher > a")
+    ThemeSwitch.init "#js-theme-switcher > a", [
+      { id: "light", title: "Light Theme", overlayColor: "#222" },
+      { id: "dark",  title: "Dark Theme",  overlayColor: "#fff" }
+    ]
 
     # Notify that user has JS
     $("html").addClass("js").removeClass("nojs")
