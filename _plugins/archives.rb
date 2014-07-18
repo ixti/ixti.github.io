@@ -53,9 +53,8 @@ module Jekyll
 
           def site_payload
             years = posts.map{ |p| p.date.year }.uniq.sort.reverse
-            site_payload_without_archive_years.deep_merge({
+            Utils.deep_merge_hashes site_payload_without_archive_years,
               'site' => { 'archive_years' => years }
-            })
           end
         end
       end
@@ -107,8 +106,8 @@ module Jekyll
       end
 
       def render(layouts, site_payload)
-        payload = { 'page' => self.to_liquid }.deep_merge(site_payload)
-        do_layout(payload, layouts)
+        page_payload = { 'page' => self.to_liquid }
+        do_layout(Utils.deep_merge_hashes(page_payload, site_payload), layouts)
       end
 
       def title
@@ -116,12 +115,11 @@ module Jekyll
       end
 
       def to_liquid
-        self.data.deep_merge({
+        Utils.deep_merge_hashes self.data,
           "url"       => url,
           "content"   => self.content,
           "title"     => self.title,
           "posts"     => @posts
-        })
       end
 
       def write dest

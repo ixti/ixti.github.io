@@ -63,9 +63,8 @@ module Jekyll
           alias_method :to_liquid_without_category, :to_liquid
 
           def to_liquid(*args)
-            to_liquid_without_category(*args).deep_merge({
+            Utils.deep_merge_hashes to_liquid_without_category(*args),
               'category' => categories.first
-            })
           end
         end
       end
@@ -83,7 +82,7 @@ module Jekyll
         protected
 
         def get_categories_from_data
-          self.data.pluralized_array('category', 'categories')
+          Utils.pluralized_array_from_hash self.data, 'category', 'categories'
         end
 
         def get_categories_from_name
@@ -135,8 +134,8 @@ module Jekyll
       end
 
       def render(layouts, site_payload)
-        payload = { 'page' => self.to_liquid }.deep_merge(site_payload)
-        do_layout(payload, layouts)
+        page_payload = { 'page' => self.to_liquid }
+        do_layout(Utils.deep_merge_hashes(page_payload, site_payload), layouts)
       end
 
       def title
@@ -144,12 +143,11 @@ module Jekyll
       end
 
       def to_liquid
-        self.data.deep_merge({
+        Utils.deep_merge_hashes self.data,
           "url"       => url,
           "content"   => self.content,
           "title"     => self.title,
           "posts"     => @posts
-        })
       end
 
       def write dest

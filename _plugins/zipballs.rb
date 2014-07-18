@@ -80,8 +80,12 @@ module Jekyll
         @site, @source = site, source
       end
 
+      def relative_path
+        File.join(@site.zipballs_config.dirname, filename)
+      end
+
       def destination dest
-        File.join(dest, @site.zipballs_config.dirname, filename)
+        File.join dest, relative_path
       end
 
       def filename
