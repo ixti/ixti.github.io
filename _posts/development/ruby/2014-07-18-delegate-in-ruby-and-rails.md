@@ -1,6 +1,8 @@
 ---
-layout:    post
-title:     Delegate in Ruby and Rails
+layout:   post
+category: development/ruby
+tags:     [ruby, rails, delegator]
+title:    Delegate in Ruby and Rails
 ---
 
 I believe most of developers in Rails community use `delegate` method to define
