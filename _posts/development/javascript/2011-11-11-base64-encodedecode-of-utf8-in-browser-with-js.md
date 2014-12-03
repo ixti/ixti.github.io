@@ -257,7 +257,15 @@ console.log(enc);
 // -> '0Y8g0L7QsdC+0LbQsNGOINC40YDQuNGB0YzQutC4'
 ```
 
+##### UPDATE (2014-12-03)
+
+This was written long time ago, and since then there's an awesome and maintained
+[package by Dan Kogai][4]. Also I encourage you to take a look at MDN's
+[Base64 encoding and decoding][5] article as well.
+
 
 [1]: http://nodeca.github.com/js-yaml/
 [2]: http://pyyaml.org/
 [3]: http://lxr.mozilla.org/mozilla/source/extensions/xml-rpc/src/nsXmlRpcClient.js
+[4]: https://github.com/dankogai/js-base64
+[5]: https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding
