@@ -252,7 +252,7 @@ is pretty simple. Require it, e.g. like this:
 and then use it like this:
 
 ``` javascript
-var enc = base64.encode('я обожаю ириьски');
+var enc = base64.encode('я обожаю ириськи');
 console.log(enc);
 // -> '0Y8g0L7QsdC+0LbQsNGOINC40YDQuNGB0YzQutC4'
 ```
