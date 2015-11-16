@@ -42,9 +42,6 @@ GEM
     jekyll-assets (0.8.1)
       jekyll (>= 1.0.0, < 3.0.0)
       sass
-      sass
-      sass
-      sass
       sprockets (~> 2.10)
       sprockets-helpers
       sprockets-sass
