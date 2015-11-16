@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Mimic dtach with tmux * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>Mimic dtach with tmux</h2>
+    
+    <ul class="post-info">
+  <li>Date: 08 Sep 2013</li>
+
+  
+    <li>Category: <a href="/categories/software.html">software</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/dtach.html">dtach</a>, <a href="/tags/tmux.html">tmux</a>, <a href="/tags/screen.html">screen</a>, and <a href="/tags/detach.html">detach</a></li>
+  
+</ul>
+
+  </header>
+
+  <p><a href="http://dtach.sourceforge.net/">dtach</a> is a tiny program that emulates detach feature of <a href="http://www.gnu.org/software/screen/">screen</a>. You
+can use it to run, for example <a href="http://www.weechat.org/">WeeChat</a> in background without suspending it.
+And <a href="http://tmux.sourceforge.net/">tmux</a> is an awesome feature-rich alternative to screen. So why one would
+want to use tmux in place of dtach? Personally I do because it allows to change
+X window title, thus I can make sure WeeChat is always opened on 8th workspace
+in my XMonad without any extra hacks.</p>
+
+<p>So let&rsquo;s summarize what I want from tmux:</p>
+
+<ul>
+<li>no history</li>
+<li>no hotkeys expect the one to &ldquo;detach&rdquo;</li>
+<li>no status line</li>
+</ul>
+
+<p>To achieve that I&rsquo;m gonna create a config for tmux and a launcher something like
+this:</p>
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="c">#!/bin/sh</span>
+<span class="c"># file ~/.local/bin/weechat</span>
+tmux start
+tmux -f ~/.tmux/weechat.conf new -d -A -s weechat weechat-curses <span class="se">\;</span> attach
+</code></pre></div>
+<p>Pretty simple enough, now all we need is a config for tmux:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text"># Unbind default prefix, so that there will be no hotkeys available and bind
+# hotkeys we are interested in:
+
+unbind C-b
+
+bind-key -n C-\   detach
+bind-key -n C-F10 kill-session
+
+
+# Disable (hide) status line completely
+
+set-option -g status off
+
+
+# Force tmux to resize a window based on the smallest client actually
+# viewing it, not on the smallest one attached to the entire session.
+
+set-window-option -g aggressive-resize on
+
+
+# 256 Colours
+
+set-option -g default-terminal &quot;screen-256color&quot;
+
+
+# Set history limit
+
+set-option -g history-limit 0
+
+
+# Window titling for X
+
+set-option -g set-titles on
+set-option -g set-titles-string &#39;#W&#39;
+</code></pre></div>
+<p>And that&rsquo;s all. To simplify this process I&rsquo;ve released a Ruby gem <a href="https://rubygems.org/gems/dmux">dmux</a>.
+Alternatively you can (if you by some reason aware of Ruby) use initial Shell
+script of mine:</p>
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="c">#!/bin/sh</span>
+
+
+<span class="nb">set</span> -e
+
+
+<span class="nv">APP</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$*</span> <span class="p">|</span> sed -e <span class="s2">&quot;s/^  *|  *$//g&quot;</span><span class="k">)</span>
+<span class="nv">SID</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="s2">&quot;$APP&quot;</span> <span class="p">|</span> md5sum <span class="p">|</span> cut -f1 -d<span class="s2">&quot; &quot;</span><span class="k">)</span>
+<span class="nv">RUN</span><span class="o">=</span><span class="s2">&quot;tmux -L dmux&quot;</span>
+<span class="nv">CFG</span><span class="o">=</span><span class="s2">&quot;$HOME/.dmux.conf&quot;</span>
+
+
+<span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$APP&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+  <span class="nb">echo</span> <span class="s2">&quot;USAGE: dmux &lt;command&gt;&quot;</span> &gt;<span class="p">&amp;</span>2
+  <span class="nb">exit </span>1
+<span class="k">fi</span>
+
+
+<span class="nb">test</span> -e <span class="s2">&quot;$CFG&quot;</span> <span class="o">||</span> cat &gt; <span class="s2">&quot;$CFG&quot;</span> <span class="s">&lt;&lt;CONFIG</span>
+<span class="s"># Unbind default prefix, so that there will be no hotkeys available and bind</span>
+<span class="s"># hotkeys we are interested in:</span>
+
+<span class="s">unbind C-b</span>
+
+<span class="s">bind-key -n C-\   detach</span>
+<span class="s">bind-key -n C-F10 kill-session</span>
+
+
+<span class="s"># Disable (hide) status line completely</span>
+
+<span class="s">set-option -g status off</span>
+
+
+<span class="s"># Force tmux to resize a window based on the smallest client actually</span>
+<span class="s"># viewing it, not on the smallest one attached to the entire session.</span>
+
+<span class="s">set-window-option -g aggressive-resize on</span>
+
+
+<span class="s"># 256 Colours</span>
+
+<span class="s">set-option -g default-terminal &quot;screen-256color&quot;</span>
+
+
+<span class="s"># Set history limit</span>
+
+<span class="s">set-option -g history-limit 0</span>
+
+
+<span class="s"># Window titling for X</span>
+
+<span class="s">set-option -g set-titles on</span>
+<span class="s">set-option -g set-titles-string &#39;#W&#39;</span>
+<span class="s">CONFIG</span>
+
+
+session_exists <span class="o">()</span> <span class="o">{</span>
+  <span class="nv">$RUN</span> has -t <span class="s2">&quot;$SID&quot;</span> 2&gt;/dev/null
+<span class="o">}</span>
+
+
+create_session <span class="o">()</span> <span class="o">{</span>
+  <span class="nv">$RUN</span> new -d -A -s <span class="s2">&quot;$SID&quot;</span> <span class="s2">&quot;$APP&quot;</span> <span class="se">\;</span> <span class="nb">source</span> <span class="s2">&quot;$CFG&quot;</span> <span class="se">\;</span> attach
+<span class="o">}</span>
+
+
+attach_session <span class="o">()</span> <span class="o">{</span>
+  <span class="nv">$RUN</span> attach -t <span class="s2">&quot;$SID&quot;</span>
+<span class="o">}</span>
+
+
+session_exists <span class="o">&amp;&amp;</span> attach_session <span class="o">||</span> create_session
+</code></pre></div>
+<p>Just save it as <code>dmux</code> somewhere within your <code>$PATH</code> environment variable and
+don&rsquo;t forget to <code>chmod +x</code> it.</p>
+
+</article>
+
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

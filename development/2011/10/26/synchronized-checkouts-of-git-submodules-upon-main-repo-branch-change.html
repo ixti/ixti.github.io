@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Synchronized checkouts of git submodules upon main repo branch change * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>Synchronized checkouts of git submodules upon main repo branch change</h2>
+    
+    <ul class="post-info">
+  <li>Date: 26 Oct 2011</li>
+
+  
+    <li>Category: <a href="/categories/development.html">development</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/how-to.html">how-to</a>, <a href="/tags/git.html">git</a>, <a href="/tags/checkout.html">checkout</a>, and <a href="/tags/submodule.html">submodule</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>This tip will be useless for most of all. But if you are involved in porting of
+something to something better (or at least something you get paid for), for
+example porting project from <a href="http://lesscss.org/">LESS</a> to <a href="http://sass-lang.com/">SASS</a>. Well you don&rsquo;t need anything
+special for such purpose, but the problem comes out when you want to have exact
+copy of original repo (with different branches), but with ported sources.</p>
+
+<p>The best explanation of a problem is <a href="https://github.com/ixti/bootstrap.scss">my port</a> of <a href="http://twitter.github.com/bootstrap/">Twitter&rsquo;s Bootstrap</a>
+CSS framework. As you can see, I&rsquo;m trying to make my <em>bootstrap.scss</em> exactly
+match original sources, but written in <em>SASS</em>. Also I want to have two branches:
+<code>master</code> and <code>2.0-wip</code> and keep work on both within same repo, just like
+original repo does.</p>
+
+<p>To track changes in original repo more easily, I have decided to add it as a
+submodule to my repo. And created branches (I wanted to work on) with same names
+as original ones. So it was something like this:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">ixti@msi:~/demo$ git submodule add git://github.com/twitter/bootstrap.git ./src
+Cloning into src...
+remote: Counting objects: 4664, done.
+remote: Compressing objects: 100% (1728/1728), done.
+remote: Total 4664 (delta 3046), reused 4408 (delta 2837)
+Receiving objects: 100% (4664/4664), 1.20 MiB | 534 KiB/s, done.
+Resolving deltas: 100% (3046/3046), done.
+
+ixti@msi:~/demo$ git commit -m &#39;Added original repo as submodule&#39;
+[master 5871d81] Added original repo as submodule
+ 2 files changed, 4 insertions(+), 0 deletions(-)
+ create mode 100644 .gitmodules
+ create mode 160000 src
+
+ixti@msi:~/demo$ cd src &amp;&amp; git branch -a &amp;&amp; cd ..
+* master
+  remotes/origin/2.0-wip
+  remotes/origin/HEAD -&gt; origin/master
+  remotes/origin/dev
+  remotes/origin/gh-pages
+  remotes/origin/kasperp-dropdown-btn-dev
+  remotes/origin/master
+
+ixti@msi:~/demo$ git checkout -b 2.0-wip
+Switched to a new branch &#39;2.0-wip&#39;
+
+ixti@msi:~/demo$ cd src &amp;&amp; git checkout 2.0-wip &amp;&amp; cd ..
+Branch 2.0-wip set up to track remote branch 2.0-wip from origin.
+Switched to a new branch &#39;2.0-wip&#39;
+
+ixti@msi:~/demo$ git commit -am &#39;Initial start of 2.0-wip branch&#39;
+[2.0-wip 659720a] Initial start of 2.0-wip branch
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+</code></pre></div>
+<p>Everything is cool, except one annoying thing - <code>src</code> does not tracks your
+checkouts in main repo, so when you will checkout to the master branch in your
+repo, it will tell you that <code>src</code> is modified, so you&rsquo;ll need to manually check
+it out:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">ixti@msi:~/demo$ git checkout master
+M   src
+Switched to branch &#39;master&#39;
+
+ixti@msi:~/demo$ cd src &amp;&amp; git checkout master &amp;&amp; cd ..
+Switched to branch &#39;master&#39;
+
+ixti@msi:~/demo$ git status 
+# On branch master
+nothing to commit (working directory clean)
+</code></pre></div>
+<p>Fortunately we can automatize this pain with this simple <code>post-checkout</code> hook:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c">#!/bin/sh</span>
+<span class="c">#file: .git/hooks/post-checkout</span>
+
+<span class="c"># Get active branch name after checkout</span>
+<span class="nv">BRANCH</span><span class="o">=</span><span class="k">$(</span>git branch <span class="p">|</span> grep <span class="s1">&#39;^*&#39;</span> <span class="p">|</span> cut -b 3-<span class="k">)</span>
+
+<span class="c"># Silently exit when checked out on specific commit (no branch)</span>
+<span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;x(no branch)&quot;</span> <span class="o">=</span> <span class="s2">&quot;x$BRANCH&quot;</span> <span class="o">]</span> <span class="p">;</span> <span class="k">then</span> <span class="nb">exit </span>0<span class="p">;</span> <span class="k">fi</span>
+
+<span class="c"># Get into our submodule with original repo</span>
+<span class="nb">cd </span>src
+
+<span class="c"># Silently exit when original repo has no similarly named branch</span>
+git branch <span class="p">|</span> grep <span class="s2">&quot;$BRANCH&quot;</span> -q <span class="o">||</span> <span class="nb">exit </span>0
+
+<span class="c"># Checkout original repo to be on same branch as we are</span>
+git checkout <span class="nv">$BRANCH</span>
+</code></pre></div>
+<p>In order to use it, just put it into your <code>$GIT_DIR/hooks/</code> directory
+(normally it will be <code>.git/hooks/</code> under root directory of your repo).</p>
+
+<p>For more details on hooks, please <code>man githooks</code>. Also you might find useful
+reading <a href="http://progit.org/book/ch7-3.html">ProGit</a> and <a href="http://book.git-scm.com/5_git_hooks.html">Git Book</a> about hooks.</p>
+
+</article>
+
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

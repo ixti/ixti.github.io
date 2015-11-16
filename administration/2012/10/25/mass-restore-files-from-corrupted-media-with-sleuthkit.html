@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Mass-restore files from corrupted media with sleuthkit * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>Mass-restore files from corrupted media with sleuthkit</h2>
+    
+    <ul class="post-info">
+  <li>Date: 25 Oct 2012</li>
+
+  
+    <li>Category: <a href="/categories/administration.html">administration</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/hdd.html">hdd</a>, <a href="/tags/files.html">files</a>, <a href="/tags/recovery.html">recovery</a>, <a href="/tags/sleuthkit.html">sleuthkit</a>, and <a href="/tags/dd.html">dd</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>Not so long ago, I mentioned that one of my external hard drives become little
+bit too slow, and was not able to remove some files, and system was always
+proposing me to run file system check. But I was always in hurry, until one day,
+when I decided to move files to another drive. Unfortunately, by some reason, I
+decided to run <code>fsck</code> before copying file on another drive. When I came in the
+morning my drive was not working properly anymore&hellip;</p>
+
+<p>So, I lost all my <del>porn</del> photos. It was impossible to mount it, and the syslog
+was full of messages like <code>Buffer I/O error on device sdb</code>. Googling left me
+with sad feeling that I will never get my data recovered. But I was wrong and
+thanks to all developers of <code>safecopy</code>, <code>testdisk</code>, <code>sleuthkit</code> and <code>autopsy</code>.</p>
+
+<h5>Grabbing image of a failing drive</h5>
+
+<p>As you might already guessed, <code>dd</code> was useless for me. So here&rsquo;s where
+might <code>safecopy</code> comes for the rescue :)) This brilliant application helped
+me to get as much data from drive as possible without any extra work:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ cd /media/storage/recover-my-broken-drive
+$ safecopy --stage1 /dev/sdb sdb-data
+
+...
+
+$ safecopy --stage2 /dev/sdb sdb-data
+
+...
+
+$ safecopy --stage3 /dev/sdb sdb-data
+</code></pre></div>
+<p>Use <code>man safecopy</code> for details. :))</p>
+
+<h5>Bringing data back alive</h5>
+
+<p>So the next day I was able to run <code>testdisk</code> on the result image file. And it
+was able to determine my filesystem. Even more, I was able to mount this image,
+but it was working really buggy. So I have investigated that image with
+<code>autopsy</code>. I needed all files under one particular directory and all it&rsquo;s
+sub-directories. Unfortunately autopsy does not gives you an option to recover
+&ldquo;all files from that directory&rdquo;. But it gives you an <em>inode</em> of each file and
+directory. That was what I was looking for. Now, knowing the inode of my
+diretory I was able to get the list of all nested entries (files, dirs, etc):</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ fls -f ext2 -p -r ./sdb-data 8650754
+
+r/r 8651063:    INCITS+ISO+IEC+14882-2003.pdf
+...
+</code></pre></div>
+<p>You can read details on the output format on a [fls wiki page][fls-wik]. But in
+short I needed all dirs/files that are not deleted, so the final command was:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ fls -f ext2 -p -r ./sdb-data 8650754 \
+  | grep -v &#39;^..-&#39; | grep -v &#39;^... \*&#39; &gt; files.lst
+</code></pre></div>
+<p>Now I had a &ldquo;clean&rdquo; list of files and directories I need to restore. To restore
+a directory, all we have to do is to, surprise-surprise, <code>mkdir</code> it ;)) but to
+recover a file, we need to output it&rsquo;s content. To get contents of a file from
+the image byt it&rsquo;s inode, I used another tool from the sleuthkit box: <code>icat</code>.
+Grabbing each file manually is dead-boring task, so here&rsquo;s a small <em>BASH</em> script
+that did all the dirty work for me:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">IMAGE</span><span class="o">=</span><span class="nv">$1</span>
+<span class="nv">LIST</span><span class="o">=</span><span class="nv">$2</span>
+<span class="nv">DEST</span><span class="o">=</span><span class="nv">$3</span>
+<span class="nv">HT</span><span class="o">=</span><span class="sb">`</span><span class="nb">printf</span> <span class="s1">&#39;\x09&#39;</span><span class="sb">`</span>
+
+cat <span class="nv">$LIST</span> <span class="p">|</span> <span class="k">while</span> <span class="nb">read </span>line<span class="p">;</span> <span class="k">do</span>
+    <span class="nv">filetype</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="s2">&quot;$line&quot;</span> <span class="p">|</span> awk <span class="o">{</span><span class="s1">&#39;print $1&#39;</span><span class="o">}</span><span class="sb">`</span>
+    <span class="nv">filenode</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="s2">&quot;$line&quot;</span> <span class="p">|</span> awk <span class="o">{</span><span class="s1">&#39;print $2&#39;</span><span class="o">}</span><span class="sb">`</span>
+    <span class="nv">filenode</span><span class="o">=</span><span class="k">${</span><span class="nv">filenode</span><span class="p">%:</span><span class="k">}</span>
+    <span class="nv">filename</span><span class="o">=</span><span class="sb">`</span><span class="nb">echo</span> <span class="s2">&quot;$line&quot;</span> <span class="p">|</span> cut -f <span class="m">2</span> -d <span class="s2">&quot;$HT&quot;</span><span class="sb">`</span>
+
+    <span class="k">if</span> <span class="o">[</span> <span class="nv">$filetype</span> <span class="o">==</span> <span class="s2">&quot;r/r&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+        <span class="nb">echo</span> <span class="s2">&quot;$filename&quot;</span>
+        mkdir -p <span class="s2">&quot;`dirname &quot;</span><span class="nv">$DEST</span>/<span class="nv">$filename</span><span class="s2">&quot;`&quot;</span>
+        icat -f ext2 -r -s <span class="nv">$IMAGE</span> <span class="s2">&quot;$filenode&quot;</span> &gt; <span class="s2">&quot;$DEST/$filename&quot;</span>
+    <span class="k">fi</span>
+<span class="k">done</span>
+</code></pre></div>
+<p>And again, <code>man icat</code> for details ;))</p>
+
+<h5>That&rsquo;s all!</h5>
+
+<p>Hope this will help somebody. And I hope I will never need it by myself. ;))</p>
+
+<h5>UPDATE (Tue 26 Nov 2013 11:22:34 PM CET)</h5>
+
+<p>If files extractor above doesn&rsquo;t work for you, you might want try version,
+kindly proposed by Dan O&#39;Day in comments:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">IMAGE</span><span class="o">=</span><span class="nv">$1</span>
+<span class="nv">LIST</span><span class="o">=</span><span class="nv">$2</span>
+<span class="nv">DEST</span><span class="o">=</span><span class="nv">$3</span>
+
+<span class="k">while</span> <span class="nv">IFS</span><span class="o">=</span><span class="s1">$&#39; \t:&#39;</span> <span class="nb">read </span>filetype filenode filename<span class="p">;</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$filetype&quot;</span> <span class="o">=</span> <span class="s2">&quot;r/r&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+        <span class="nb">echo</span> <span class="s2">&quot;$filename&quot;</span>
+        mkdir -p <span class="s2">&quot;`dirname &quot;</span><span class="nv">$DEST</span>/<span class="nv">$filename</span><span class="s2">&quot;`&quot;</span>
+        icat -f ntfs -r -s <span class="nv">$IMAGE</span> <span class="s2">&quot;$filenode&quot;</span> &gt; <span class="s2">&quot;$DEST/$filename&quot;</span>
+    <span class="k">fi</span>
+<span class="k">done</span> &lt; <span class="nv">$LIST</span>
+</code></pre></div>
+</article>
+
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Delegate in Ruby and Rails * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>Delegate in Ruby and Rails</h2>
+    
+    <ul class="post-info">
+  <li>Date: 18 Jul 2014</li>
+
+  
+    <li>Category: <a href="/categories/development/ruby.html">development/ruby</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/ruby.html">ruby</a>, <a href="/tags/rails.html">rails</a>, and <a href="/tags/delegator.html">delegator</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>I believe most of developers in Rails community use <code>delegate</code> method to define
+delegators, because (according to documentation) it looks nicer and it&rsquo;s API
+more human readable. I disagree and encourage you to look at <code>Forwardable</code>.</p>
+
+<p>First of all I would like to talk about &ldquo;beauty&rdquo;. Since Ruby <code>1.9.1</code>,
+<code>Forwardable</code> provides a decorated <code>def_instance_delegator</code> with API similar
+to Rails one:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Boss</span>
+  <span class="kp">extend</span> <span class="no">Forwardable</span>
+
+  <span class="c1"># delegate single method</span>
+  <span class="n">delegate</span> <span class="ss">:schedule</span> <span class="o">=&gt;</span> <span class="ss">:secretary</span>
+
+  <span class="c1"># or a bunch of them</span>
+  <span class="n">delegate</span> <span class="o">[</span><span class="ss">:calls_filter</span><span class="p">,</span> <span class="ss">:mails_filter</span><span class="o">]</span> <span class="o">=&gt;</span> <span class="ss">:secretary</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Compare that to:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Boss</span>
+  <span class="c1"># delegate single method</span>
+  <span class="n">delegate</span> <span class="ss">:schedule</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:secretary</span>
+
+  <span class="c1"># or a bunch of them</span>
+  <span class="n">delegate</span> <span class="o">[</span><span class="ss">:calls_filter</span><span class="p">,</span> <span class="ss">:mails_filter</span><span class="o">]</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:secretary</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Looks pretty similar, huh? So, what you will miss if you will use Ruby&rsquo;s
+<code>def_instance_delegator</code> (or it&rsquo;s helper <code>delegate</code>)? The list is pretty short:</p>
+
+<ul>
+<li>Silent return of <code>nil</code> when target is <code>nil</code> and delegator defined
+with <code>:allow_nil =&gt; true</code> option.</li>
+<li>Automatic prefixing of bunch of delegated methods</li>
+</ul>
+
+<p>So, why I prefer <code>def_instance_delegator</code> (or <code>def_delegator</code> shortcut)
+instead? One pretty thing about <code>Forwardable</code>&rsquo;s delegators is that you
+can define custom generated delegator method name:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">Workers</span>
+  <span class="k">class</span> <span class="nc">Base</span>
+    <span class="kp">extend</span> <span class="no">Forwardable</span>
+
+    <span class="c1"># define `option(key)` delegatred to `@options.fetch(key)`</span>
+    <span class="n">def_delegator</span> <span class="ss">:@options</span><span class="p">,</span> <span class="ss">:fetch</span><span class="p">,</span> <span class="ss">:option</span>
+
+    <span class="c1"># mimic Rails&#39; `:prefix =&gt; true` option of delegate method</span>
+    <span class="n">def_delegator</span> <span class="ss">:client</span><span class="p">,</span> <span class="ss">:address</span><span class="p">,</span> <span class="ss">:client_address</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Now let&rsquo;s talk about difference in wraper that is generated. Let&rsquo;s start
+with Rails:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Invoice</span>
+  <span class="n">delegate</span> <span class="ss">:address</span><span class="p">,</span> <span class="ss">:to</span> <span class="o">=&gt;</span> <span class="ss">:client</span><span class="p">,</span> <span class="ss">:prefix</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+
+  <span class="c1"># the above equals of writing following:</span>
+
+  <span class="k">def</span> <span class="nf">client_address</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">client</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">_</span><span class="o">.</span><span class="n">nil?</span> <span class="o">||</span> <span class="kp">nil</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:address</span><span class="p">)</span>
+      <span class="n">_</span><span class="o">.</span><span class="n">address</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">else</span>
+      <span class="k">raise</span> <span class="no">DelegationError</span><span class="p">,</span> <span class="s2">&quot;Invoice#client_address delegated to client.address, but client is nil: </span><span class="si">#{</span><span class="nb">self</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Now, let&rsquo;s see what <code>Forwardable</code> variant will generate for us:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Invoice</span>
+  <span class="n">def_delegator</span> <span class="ss">:client</span><span class="p">,</span> <span class="ss">:address</span><span class="p">,</span> <span class="ss">:client_address</span>
+
+  <span class="c1"># the above equals of writing following:</span>
+
+  <span class="k">def</span> <span class="nf">client_address</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">begin</span>
+      <span class="n">client</span><span class="o">.</span><span class="n">__send__</span><span class="p">(</span><span class="ss">:address</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">rescue</span> <span class="no">Exception</span>
+      <span class="vg">$@</span><span class="o">.</span><span class="n">delete_if</span> <span class="p">{</span> <span class="o">|</span><span class="n">s</span><span class="o">|</span> <span class="sr">%r&quot;</span><span class="si">#{</span><span class="no">Regexp</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">__FILE__</span><span class="p">)</span><span class="si">}</span><span class="sr">&quot;o</span> <span class="o">=~</span> <span class="n">s</span> <span class="p">}</span> <span class="k">unless</span> <span class="no">Forwardable</span><span class="o">::</span><span class="n">debug</span>
+      <span class="o">::</span><span class="no">Kernel</span><span class="o">::</span><span class="k">raise</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>As you can see main difference is that <code>Forwardable</code> version:</p>
+
+<ul>
+<li>does not checks whenever target responds to delegated message or not,
+and simply sends that message with given args and block if any.</li>
+<li>removes it&rsquo;s own trace lines from backtrace</li>
+</ul>
+
+<p>Notice, that due to <code>Forwardable</code> uses <code>__send__</code> on target, it ignores
+defined message visibility, so you can delegate to protected and private
+methods of a target. Keep that in mind.</p>
+
+<p><code>Forwardable</code> can be used to define methods on instances as well:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">some_object</span><span class="o">.</span><span class="n">extend</span> <span class="no">Forwardable</span>
+<span class="n">some_object</span><span class="o">.</span><span class="n">delegate</span> <span class="s2">&quot;puts&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;STDOUT&quot;</span>
+<span class="n">some_object</span><span class="o">.</span><span class="n">puts</span> <span class="s2">&quot;Tada!&quot;</span>
+</code></pre></div>
+<p>But, if you want to define delegators on instance you should better use
+another delegation mixin: <code>SingleForwardable</code> (defined in <code>forwardable</code>).
+Difference between two is that <code>Forwardable</code> tries to define method via
+<code>module_eval</code> and then fall-backs to <code>instance_eval</code>, where <code>SingleForwardable</code>
+uses only <code>instance_eval</code>. That actually allows you to define delegators
+on class, so instead of writing something like this:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">Implementation</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">service</span>
+    <span class="nb">puts</span> <span class="s2">&quot;serviced!&quot;</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Facade</span>
+  <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="nb">self</span>
+    <span class="kp">extend</span> <span class="no">Forwardable</span>
+    <span class="n">def_delegator</span> <span class="ss">:Implementation</span><span class="p">,</span> <span class="ss">:service</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">Facade</span><span class="o">.</span><span class="n">service</span> <span class="c1"># =&gt; &quot;serviced!&quot;</span>
+</code></pre></div>
+<p>You can use <code>SingleForwardable</code> instead right on class:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class Implementation
+  def self.service
+    puts &quot;serviced!&quot;
+  end
+end
+
+class Facade
+  extend SingleForwardable
+  def_delegator :Implementation, :service
+end
+
+Facade.service # =&gt; &quot;serviced!&quot;
+</code></pre></div>
+<p>The two variants above generate absolutely the same result. Notice that if you
+want to use both <code>Forwardable</code> and <code>SingleForwardable</code> at the same time you can
+use full names of helpers: <code>def_instance_delegator</code> and <code>def_single_delegator</code>.
+But, in my opinion first variant (with <code>class &lt;&lt; self</code> and <code>Forwardable</code>) looks
+way more readable after all ;))</p>
+
+</article>
+
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

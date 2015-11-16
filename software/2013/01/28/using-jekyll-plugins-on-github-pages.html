@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Using Jekyll plugins on GitHub Pages * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>Using Jekyll plugins on GitHub Pages</h2>
+    
+    <ul class="post-info">
+  <li>Date: 28 Jan 2013</li>
+
+  
+    <li>Category: <a href="/categories/software.html">software</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/jekyll.html">jekyll</a>, <a href="/tags/plugins.html">plugins</a>, <a href="/tags/github.html">github</a>, and <a href="/tags/publish.html">publish</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>Few people asked me how they can use <a href="http://ixti.net/jekyll-assets/">jekyll-assets</a> on <a href="http://pages.github.com/">GitHub
+pages</a>. There are <a href="https://www.google.com/search?q=github+pages">lots of info</a> out there on this topic,
+but I would like to aggregate some kind of best practices here. Main thing to
+understand here is that GitHub renders pages using <a href="http://jekyllrb.com/">Jekyll</a> with <code>safe</code>
+mode enabled. Custom plugins are disabled when <code>safe</code> mode is on. In other words
+this instruction applies to any third-party plugin&hellip;</p>
+
+<p>As I said above, GitHub Pages does not allows you to use custom plugins, so the
+only way to use Jekyll with custom plugins on GitHub Pages is compiling sources
+locally and pushing compiled results only. In other words, it becomes absolutely
+indifferent where to publish your website GitHub Pages or any other hosting of
+static files.</p>
+
+<p>Following instructions are based on <a href="http://octopress.org/">Octopress</a> deployment how-to, so
+all credits goes to community of that awesome project.</p>
+
+<h3>User &amp; Organization Pages</h3>
+
+<p>User &amp; Organization Pages live in a special repository dedicated to only the
+Pages files. This repo must use <code>username/username.github.com</code> naming scheme.</p>
+
+<p>GitHub will use <code>master</code> branch of such repo to build and publish the Pages.
+That leads us into having <code>master</code> branch with compiled web-site and <code>source</code>
+branch with our website sources.</p>
+
+<h4>Prepare repository</h4>
+
+<p>Repo preparation is very simple, just create a <code>source</code> branch in your repo:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$ git checkout -b source master
+$ git push -u origin source
+</code></pre></div>
+<p>Now as you have created <code>source</code> branch you can make it <em>default</em> on GitHub:</p>
+
+<div class="center"><img src="/assets/2013-01/github-repo-settings-fb547456218503241925707ffee2e168.png"></div>
+
+<h4>Automate publishing</h4>
+
+<p>Once repo is ready you can render your website and push compiled sources into
+master branch. But doing it manually is a pain, so let&rsquo;s add simple rake task.
+Create (if you don&rsquo;t have one yet) a Rakefile and add following into it:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s2">&quot;rubygems&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;tmpdir&quot;</span>
+
+<span class="nb">require</span> <span class="s2">&quot;bundler/setup&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;jekyll&quot;</span>
+
+
+<span class="c1"># Change your GitHub reponame</span>
+<span class="no">GITHUB_REPONAME</span> <span class="o">=</span> <span class="s2">&quot;ixti/ixti.github.com&quot;</span>
+
+
+<span class="n">desc</span> <span class="s2">&quot;Generate blog files&quot;</span>
+<span class="n">task</span> <span class="ss">:generate</span> <span class="k">do</span>
+  <span class="no">Jekyll</span><span class="o">::</span><span class="no">Site</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Jekyll</span><span class="o">.</span><span class="n">configuration</span><span class="p">({</span>
+    <span class="s2">&quot;source&quot;</span>      <span class="o">=&gt;</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;destination&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;_site&quot;</span>
+  <span class="p">}))</span><span class="o">.</span><span class="n">process</span>
+<span class="k">end</span>
+
+
+<span class="n">desc</span> <span class="s2">&quot;Generate and publish blog to gh-pages&quot;</span>
+<span class="n">task</span> <span class="ss">:publish</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:generate</span><span class="o">]</span> <span class="k">do</span>
+  <span class="no">Dir</span><span class="o">.</span><span class="n">mktmpdir</span> <span class="k">do</span> <span class="o">|</span><span class="n">tmp</span><span class="o">|</span>
+    <span class="n">cp_r</span> <span class="s2">&quot;_site/.&quot;</span><span class="p">,</span> <span class="n">tmp</span>
+
+    <span class="n">pwd</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
+    <span class="no">Dir</span><span class="o">.</span><span class="n">chdir</span> <span class="n">tmp</span>
+
+    <span class="nb">system</span> <span class="s2">&quot;git init&quot;</span>
+    <span class="nb">system</span> <span class="s2">&quot;git add .&quot;</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">utc</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="nb">system</span> <span class="s2">&quot;git commit -m </span><span class="si">#{</span><span class="n">message</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="nb">system</span> <span class="s2">&quot;git remote add origin git@github.com:</span><span class="si">#{</span><span class="no">GITHUB_REPONAME</span><span class="si">}</span><span class="s2">.git&quot;</span>
+    <span class="nb">system</span> <span class="s2">&quot;git push origin master --force&quot;</span>
+
+    <span class="no">Dir</span><span class="o">.</span><span class="n">chdir</span> <span class="n">pwd</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Now you can simply call <code>rake publish</code> to compile and publish your web-site to
+GitHub Pages.</p>
+
+<h3>Project Pages</h3>
+
+<p>Unlike User and Org Pages, Project Pages are kept in the same repo as the
+project they are for. These pages are almost exactly the same as User and
+Org Pages, with one main difference: <code>gh-pages</code> branch is used instead of
+<code>master</code> to build and publish Pages.</p>
+
+<p>There&rsquo;s no extra repo preapration steps needed. All that you&rsquo;ll need is a
+similar, rake task with tiny changes in it:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s2">&quot;rubygems&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;tmpdir&quot;</span>
+
+<span class="nb">require</span> <span class="s2">&quot;bundler/setup&quot;</span>
+<span class="nb">require</span> <span class="s2">&quot;jekyll&quot;</span>
+
+
+<span class="c1"># Change your GitHub reponame</span>
+<span class="no">GITHUB_REPONAME</span> <span class="o">=</span> <span class="s2">&quot;ixti/jekyll-assets&quot;</span>
+
+
+<span class="n">namespace</span> <span class="ss">:site</span> <span class="k">do</span>
+  <span class="n">desc</span> <span class="s2">&quot;Generate blog files&quot;</span>
+  <span class="n">task</span> <span class="ss">:generate</span> <span class="k">do</span>
+    <span class="no">Jekyll</span><span class="o">::</span><span class="no">Site</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Jekyll</span><span class="o">.</span><span class="n">configuration</span><span class="p">({</span>
+      <span class="s2">&quot;source&quot;</span>      <span class="o">=&gt;</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;destination&quot;</span> <span class="o">=&gt;</span> <span class="s2">&quot;_site&quot;</span>
+    <span class="p">}))</span><span class="o">.</span><span class="n">process</span>
+  <span class="k">end</span>
+
+
+  <span class="n">desc</span> <span class="s2">&quot;Generate and publish blog to gh-pages&quot;</span>
+  <span class="n">task</span> <span class="ss">:publish</span> <span class="o">=&gt;</span> <span class="o">[</span><span class="ss">:generate</span><span class="o">]</span> <span class="k">do</span>
+    <span class="no">Dir</span><span class="o">.</span><span class="n">mktmpdir</span> <span class="k">do</span> <span class="o">|</span><span class="n">tmp</span><span class="o">|</span>
+      <span class="n">cp_r</span> <span class="s2">&quot;_site/.&quot;</span><span class="p">,</span> <span class="n">tmp</span>
+
+      <span class="n">pwd</span> <span class="o">=</span> <span class="no">Dir</span><span class="o">.</span><span class="n">pwd</span>
+      <span class="no">Dir</span><span class="o">.</span><span class="n">chdir</span> <span class="n">tmp</span>
+
+      <span class="nb">system</span> <span class="s2">&quot;git init&quot;</span>
+      <span class="nb">system</span> <span class="s2">&quot;git add .&quot;</span>
+      <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Site updated at </span><span class="si">#{</span><span class="no">Time</span><span class="o">.</span><span class="n">now</span><span class="o">.</span><span class="n">utc</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">system</span> <span class="s2">&quot;git commit -m </span><span class="si">#{</span><span class="n">message</span><span class="o">.</span><span class="n">inspect</span><span class="si">}</span><span class="s2">&quot;</span>
+      <span class="nb">system</span> <span class="s2">&quot;git remote add origin git@github.com:</span><span class="si">#{</span><span class="no">GITHUB_REPONAME</span><span class="si">}</span><span class="s2">.git&quot;</span>
+      <span class="nb">system</span> <span class="s2">&quot;git push origin master:refs/heads/gh-pages --force&quot;</span>
+
+      <span class="no">Dir</span><span class="o">.</span><span class="n">chdir</span> <span class="n">pwd</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Now you can run <code>rake site:publish</code> to compile and publish your web-site to
+GitHub Pages. Take a look on <a href="https://github.com/mojombo/jekyll/blob/master/Rakefile">Jekyll&rsquo;s own Rakefile</a> as well
+for alternative implementation of <code>rake site:publish</code>.</p>
+
+</article>
+
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>XMonad.Action.GridSelect spawnSelected with nice titles * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>XMonad.Action.GridSelect spawnSelected with nice titles</h2>
+    
+    <ul class="post-info">
+  <li>Date: 07 Sep 2013</li>
+
+  
+    <li>Category: <a href="/categories/software.html">software</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/XMonad.html">XMonad</a>, <a href="/tags/menu.html">menu</a>, <a href="/tags/spawn.html">spawn</a>, <a href="/tags/grid.html">grid</a>, <a href="/tags/snippet.html">snippet</a>, and <a href="/tags/haskell.html">haskell</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>There&rsquo;s an awesome module available for <a href="http://xmonad.org">XMonad</a> called <a href="http://xmonad.org/xmonad-docs/xmonad-contrib/XMonad-Actions-GridSelect.html">GridSelect</a>. It
+contains very pretty window selectors and such. And one of it&rsquo;s awesome
+functions is <code>spawnSelected</code> that aimed to build a grid menu with apps to run.
+Usage is pretty simple: <code>spawnSelected conf [&quot;xterm&quot;, &quot;smplayer&quot;, &quot;gvim&quot;]</code>.
+But what if you want to have <em>nice</em> titles rather than command names?</p>
+
+<p>If you&rsquo;ll take a look on that function <a href="http://xmonad.org/xmonad-docs/xmonad-contrib/src/XMonad-Actions-GridSelect.html#spawnSelected">source</a> it zips given list with
+itself and feeds to <code>gridlist</code> function, which returns <code>snd</code> element of chosen
+tuple. That means you can easily write your own definitions that will allow to
+provide nice names for menu elements. So it will look something like this:</p>
+
+<div class="center"><img src="/assets/2013-09/modified-spawnselected-1b2b717c36bdd0c1574edbe3f5d601de.png"></div>
+
+<p>Let&rsquo;s import module first:</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="kr">import</span> <span class="nn">XMonad.Actions.GridSelect</span>
+</code></pre></div>
+<p>Then we can define our version of <code>spawnSelected</code> like this:</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="nf">spawnSelected&#39;</span> <span class="ow">::</span> <span class="p">[(</span><span class="kt">String</span><span class="p">,</span> <span class="kt">String</span><span class="p">)]</span> <span class="ow">-&gt;</span> <span class="kt">X</span> <span class="nb">()</span>
+<span class="nf">spawnSelected&#39;</span> <span class="n">lst</span> <span class="ow">=</span> <span class="n">gridselect</span> <span class="n">conf</span> <span class="n">lst</span> <span class="o">&gt;&gt;=</span> <span class="n">flip</span> <span class="n">whenJust</span> <span class="n">spawn</span>
+  <span class="kr">where</span> <span class="n">conf</span> <span class="ow">=</span> <span class="n">defaultGSConfig</span>
+</code></pre></div>
+<p>Now all you need to do is to add a hotkey to run your menu, something like this:</p>
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="p">,</span> <span class="p">((</span><span class="n">modm</span><span class="p">,</span> <span class="n">xK_r</span><span class="p">),</span> <span class="n">spawnSelected&#39;</span>
+  <span class="p">[</span> <span class="p">(</span><span class="s">&quot;Mozilla Firefox&quot;</span><span class="p">,</span> <span class="s">&quot;firefox&quot;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="p">(</span><span class="s">&quot;GVim&quot;</span><span class="p">,</span>            <span class="s">&quot;gvim&quot;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="p">(</span><span class="s">&quot;MCabber&quot;</span><span class="p">,</span>         <span class="s">&quot;xterm -e detach -A /tmp/mcabber -z mcabber&quot;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="p">(</span><span class="s">&quot;WeeChat&quot;</span><span class="p">,</span>         <span class="s">&quot;xterm -e detach -A /tmp/weechat -z weechat-curses&quot;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="p">(</span><span class="s">&quot;Terminal&quot;</span><span class="p">,</span>        <span class="s">&quot;xterm&quot;</span><span class="p">)</span>
+  <span class="p">])</span>
+</code></pre></div>
+</article>
+
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

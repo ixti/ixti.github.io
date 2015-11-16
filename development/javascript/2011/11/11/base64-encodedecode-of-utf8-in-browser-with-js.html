@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Base64 encode/decode of UTF8 in browser with JS * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>Base64 encode/decode of UTF8 in browser with JS</h2>
+    
+    <ul class="post-info">
+  <li>Date: 11 Nov 2011</li>
+
+  
+    <li>Category: <a href="/categories/development/javascript.html">development/javascript</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/base64.html">base64</a>, <a href="/tags/utf8.html">utf8</a>, <a href="/tags/unicode.html">unicode</a>, <a href="/tags/javascript.html">javascript</a>, and <a href="/tags/snippet.html">snippet</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>While working on <a href="http://nodeca.github.com/js-yaml/">live demo of JS-YAML</a>, our pure JavaScript port of exciting
+<a href="http://pyyaml.org/">PyYAML</a>. I found that there&rsquo;s absolutely no ready solutions for encoding and
+decoding Base64 in JavaScript for unicode. Tons of Base64 encoders/decoders that
+will blow out your unicode string like <code>я обожаю ириьски</code> into something
+absolutely useless. Tons of utf8 encoders/decoders that just do not work.
+So I wrote my own&hellip;</p>
+
+<p>Let&rsquo;s start with encoding/decoding Unicode strings. The easiest part here is
+decoding:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">utf8Decode</span><span class="p">(</span><span class="nx">bytes</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">chars</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">length</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">c2</span><span class="p">,</span> <span class="nx">c3</span><span class="p">;</span>
+
+  <span class="k">while</span> <span class="p">(</span><span class="nx">offset</span> <span class="o">&lt;</span> <span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">c</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">[</span><span class="nx">offset</span><span class="p">];</span>
+    <span class="nx">c2</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">[</span><span class="nx">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+    <span class="nx">c3</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">[</span><span class="nx">offset</span> <span class="o">+</span> <span class="mi">2</span><span class="p">];</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="mi">128</span> <span class="o">&gt;</span> <span class="nx">c</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">chars</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(</span><span class="nx">c</span><span class="p">));</span>
+      <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="mi">191</span> <span class="o">&lt;</span> <span class="nx">c</span> <span class="o">&amp;&amp;</span> <span class="nx">c</span> <span class="o">&lt;</span> <span class="mi">224</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">chars</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(((</span><span class="nx">c</span> <span class="o">&amp;</span> <span class="mi">31</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="nx">c2</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">)));</span>
+      <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">chars</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(((</span><span class="nx">c</span> <span class="o">&amp;</span> <span class="mi">15</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">|</span> <span class="p">((</span><span class="nx">c2</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="nx">c3</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">)));</span>
+      <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">3</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">chars</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This function is straight forward and dead simple, so we won&rsquo;t talk about it too
+much. It receives array of unicode bytes and returns a simple string. Now, the
+most interesting part is encode unicode stream into array of bytes.</p>
+
+<p>I saw lots of variants and all they was not working properly. Mostly because
+authors forget that <code>String#length</code> on unicode string in browser is little bit
+unpredictable (otherwise  you would not read this post). So we can simply throw
+away about 95% of such implementations. I even saw attempt to use <code>String#split</code>
+to calculate length of the string - nice but useless try&hellip;</p>
+
+<p>The most viable solution I saw was using regular expressions. The idea was good,
+the implementation was shit - in fact, author was simply lack of regular
+expression usage practice. Anyway, everybody  miss the most simple solution&hellip;
+We have native function <code>encodeURI</code> which converts a string to be used as part
+of the URI, and that string contains bytes representation of non-ASCII chars n
+form of <code>%XX</code>, where <code>XX</code> is a hexadecimal code. So we can use such string to
+build desired array of bytes. And here we are:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">function</span> <span class="nx">utf8Encode</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">bytes</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">length</span><span class="p">,</span> <span class="kr">char</span><span class="p">;</span>
+
+  <span class="nx">str</span> <span class="o">=</span> <span class="nb">encodeURI</span><span class="p">(</span><span class="nx">str</span><span class="p">);</span>
+  <span class="nx">length</span> <span class="o">=</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+
+  <span class="k">while</span> <span class="p">(</span><span class="nx">offset</span> <span class="o">&lt;</span> <span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">char</span> <span class="o">=</span> <span class="nx">str</span><span class="p">[</span><span class="nx">offset</span><span class="p">];</span>
+    <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;%&#39;</span> <span class="o">!==</span> <span class="kr">char</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">bytes</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="kr">char</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="kr">char</span> <span class="o">=</span> <span class="nx">str</span><span class="p">[</span><span class="nx">offset</span><span class="p">]</span> <span class="o">+</span> <span class="nx">str</span><span class="p">[</span><span class="nx">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+      <span class="nx">bytes</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="kr">char</span><span class="p">,</span> <span class="mi">16</span><span class="p">));</span>
+      <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">bytes</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>OK. now the most easiest part - Base64 encode/decode. I would not talk too much
+about it, as it&rsquo;s straight forward task, and in fact almost every solution I
+found on the Internet was working (more or less). So I used the most easy to
+read and understand one - the part of <a href="http://lxr.mozilla.org/mozilla/source/extensions/xml-rpc/src/nsXmlRpcClient.js">Mozilla&rsquo;s XML-RPC client</a> with few
+tuning I made to meet my requirements of code style mostly. Here&rsquo;s the result:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">global</span><span class="p">)</span> <span class="p">{</span>
+  <span class="s1">&#39;use strict&#39;</span><span class="p">;</span>
+
+  <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{},</span>
+      <span class="nx">padding</span> <span class="o">=</span> <span class="s1">&#39;=&#39;</span><span class="p">,</span>
+      <span class="nx">chrTable</span> <span class="o">=</span> <span class="s1">&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz&#39;</span> <span class="o">+</span>
+                 <span class="s1">&#39;0123456789+/&#39;</span><span class="p">,</span>
+      <span class="nx">binTable</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">62</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">63</span><span class="p">,</span>
+        <span class="mi">52</span><span class="p">,</span><span class="mi">53</span><span class="p">,</span><span class="mi">54</span><span class="p">,</span><span class="mi">55</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span><span class="mi">57</span><span class="p">,</span><span class="mi">58</span><span class="p">,</span><span class="mi">59</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span><span class="mi">61</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span>  <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span>
+        <span class="mi">15</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">18</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">21</span><span class="p">,</span><span class="mi">22</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span><span class="mi">24</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">26</span><span class="p">,</span><span class="mi">27</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span><span class="mi">30</span><span class="p">,</span><span class="mi">31</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span><span class="mi">34</span><span class="p">,</span><span class="mi">35</span><span class="p">,</span><span class="mi">36</span><span class="p">,</span> <span class="mi">37</span><span class="p">,</span><span class="mi">38</span><span class="p">,</span><span class="mi">39</span><span class="p">,</span><span class="mi">40</span><span class="p">,</span>
+        <span class="mi">41</span><span class="p">,</span><span class="mi">42</span><span class="p">,</span><span class="mi">43</span><span class="p">,</span><span class="mi">44</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span><span class="mi">46</span><span class="p">,</span><span class="mi">47</span><span class="p">,</span><span class="mi">48</span><span class="p">,</span> <span class="mi">49</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">51</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span>
+      <span class="p">];</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="nx">global</span><span class="p">.</span><span class="nx">console</span> <span class="o">&amp;&amp;</span> <span class="nx">global</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">log</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">global</span><span class="p">.</span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">message</span><span class="p">);</span>
+    <span class="p">};</span>
+  <span class="p">}</span>
+
+  <span class="c1">// internal helpers //////////////////////////////////////////////////////////</span>
+
+  <span class="kd">function</span> <span class="nx">utf8Encode</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">bytes</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">length</span><span class="p">,</span> <span class="kr">char</span><span class="p">;</span>
+
+    <span class="nx">str</span> <span class="o">=</span> <span class="nb">encodeURI</span><span class="p">(</span><span class="nx">str</span><span class="p">);</span>
+    <span class="nx">length</span> <span class="o">=</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="nx">offset</span> <span class="o">&lt;</span> <span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">char</span> <span class="o">=</span> <span class="nx">str</span><span class="p">[</span><span class="nx">offset</span><span class="p">];</span>
+      <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;%&#39;</span> <span class="o">!==</span> <span class="kr">char</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">bytes</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="kr">char</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="mi">0</span><span class="p">));</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="kr">char</span> <span class="o">=</span> <span class="nx">str</span><span class="p">[</span><span class="nx">offset</span><span class="p">]</span> <span class="o">+</span> <span class="nx">str</span><span class="p">[</span><span class="nx">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+        <span class="nx">bytes</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">parseInt</span><span class="p">(</span><span class="kr">char</span><span class="p">,</span> <span class="mi">16</span><span class="p">));</span>
+        <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">2</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">bytes</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kd">function</span> <span class="nx">utf8Decode</span><span class="p">(</span><span class="nx">bytes</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">chars</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">length</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">c2</span><span class="p">,</span> <span class="nx">c3</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="nx">offset</span> <span class="o">&lt;</span> <span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">c</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">[</span><span class="nx">offset</span><span class="p">];</span>
+      <span class="nx">c2</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">[</span><span class="nx">offset</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+      <span class="nx">c3</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">[</span><span class="nx">offset</span> <span class="o">+</span> <span class="mi">2</span><span class="p">];</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="mi">128</span> <span class="o">&gt;</span> <span class="nx">c</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">chars</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(</span><span class="nx">c</span><span class="p">));</span>
+        <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="mi">191</span> <span class="o">&lt;</span> <span class="nx">c</span> <span class="o">&amp;&amp;</span> <span class="nx">c</span> <span class="o">&lt;</span> <span class="mi">224</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">chars</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(((</span><span class="nx">c</span> <span class="o">&amp;</span> <span class="mi">31</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="nx">c2</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">)));</span>
+        <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">2</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">chars</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(((</span><span class="nx">c</span> <span class="o">&amp;</span> <span class="mi">15</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">|</span> <span class="p">((</span><span class="nx">c2</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="nx">c3</span> <span class="o">&amp;</span> <span class="mi">63</span><span class="p">)));</span>
+        <span class="nx">offset</span> <span class="o">+=</span> <span class="mi">3</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">chars</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="c1">// public api ////////////////////////////////////////////////////////////////</span>
+
+  <span class="kd">function</span> <span class="nx">encode</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="nx">bytes</span> <span class="o">=</span> <span class="nx">utf8Encode</span><span class="p">(</span><span class="nx">str</span><span class="p">),</span>
+        <span class="nx">length</span> <span class="o">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span>
+        <span class="nx">i</span><span class="p">;</span>
+
+    <span class="c1">// Convert every three bytes to 4 ascii characters.</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span> <span class="nx">i</span> <span class="o">+=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span><span class="p">];</span>
+      <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[((</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x03</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)];</span>
+      <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[((</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x0f</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">6</span><span class="p">)];</span>
+      <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x3f</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Convert the remaining 1 or 2 bytes, pad out to 4 characters.</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">length</span><span class="o">%</span><span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">i</span> <span class="o">=</span> <span class="nx">length</span> <span class="o">-</span> <span class="p">(</span><span class="nx">length</span><span class="o">%</span><span class="mi">3</span><span class="p">);</span>
+      <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span><span class="p">];</span>
+      <span class="k">if</span> <span class="p">((</span><span class="nx">length</span><span class="o">%</span><span class="mi">3</span><span class="p">)</span> <span class="o">===</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[((</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x03</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)];</span>
+        <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[(</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x0f</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">2</span><span class="p">];</span>
+        <span class="nx">result</span> <span class="o">+=</span> <span class="nx">padding</span><span class="p">;</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">result</span> <span class="o">+=</span> <span class="nx">chrTable</span><span class="p">[(</span><span class="nx">bytes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x03</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">];</span>
+        <span class="nx">result</span> <span class="o">+=</span> <span class="nx">padding</span> <span class="o">+</span> <span class="nx">padding</span><span class="p">;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">result</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kd">function</span> <span class="nx">decode</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="nx">bytes</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="nx">leftbits</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="c1">// number of bits decoded, but yet to be appended</span>
+        <span class="nx">leftdata</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// bits decoded, but yet to be appended</span>
+
+    <span class="c1">// Convert one by one.</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nx">idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">idx</span> <span class="o">&lt;</span> <span class="nx">data</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">idx</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">code</span> <span class="o">=</span> <span class="nx">data</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="nx">idx</span><span class="p">);</span>
+      <span class="nx">value</span> <span class="o">=</span> <span class="nx">binTable</span><span class="p">[</span><span class="nx">code</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">];</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">===</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Skip illegal characters and whitespace</span>
+        <span class="nx">log</span><span class="p">(</span><span class="s2">&quot;WARN: Illegal characters (code=&quot;</span> <span class="o">+</span> <span class="nx">code</span> <span class="o">+</span> <span class="s2">&quot;) in position &quot;</span> <span class="o">+</span> <span class="nx">idx</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// Collect data into leftdata, update bitcount</span>
+        <span class="nx">leftdata</span> <span class="o">=</span> <span class="p">(</span><span class="nx">leftdata</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">)</span> <span class="o">|</span> <span class="nx">value</span><span class="p">;</span>
+        <span class="nx">leftbits</span> <span class="o">+=</span> <span class="mi">6</span><span class="p">;</span>
+
+        <span class="c1">// If we have 8 or more bits, append 8 bits to the result</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">leftbits</span> <span class="o">&gt;=</span> <span class="mi">8</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">leftbits</span> <span class="o">-=</span> <span class="mi">8</span><span class="p">;</span>
+          <span class="c1">// Append if not padding.</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">padding</span> <span class="o">!==</span> <span class="nx">data</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="nx">idx</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">bytes</span><span class="p">.</span><span class="nx">push</span><span class="p">((</span><span class="nx">leftdata</span> <span class="o">&gt;&gt;</span> <span class="nx">leftbits</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">);</span>
+          <span class="p">}</span>
+          <span class="nx">leftdata</span> <span class="o">&amp;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="nx">leftbits</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// If there are any bits left, the base64 string was corrupted</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">leftbits</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">log</span><span class="p">(</span><span class="s2">&quot;ERROR: Corrupted base64 string&quot;</span><span class="p">);</span>
+      <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">utf8Decode</span><span class="p">(</span><span class="nx">bytes</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="nx">global</span><span class="p">.</span><span class="nx">base64</span> <span class="o">=</span> <span class="p">{</span><span class="nx">encode</span><span class="o">:</span> <span class="nx">encode</span><span class="p">,</span> <span class="nx">decode</span><span class="o">:</span> <span class="nx">decode</span><span class="p">};</span>
+<span class="p">}(</span><span class="nb">window</span><span class="p">));</span>
+</code></pre></div>
+<p>These are all you need to Base64 encode/decode unicode in browser properly. Hope
+this will help and save you some time. :))</p>
+
+<p>You can download full solution from the <em>bits</em> of this article below. The usage
+is pretty simple. Require it, e.g. like this:</p>
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">&quot;js/base64.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+</code></pre></div>
+<p>and then use it like this:</p>
+<div class="highlight"><pre><code class="language-javascript" data-lang="javascript"><span class="kd">var</span> <span class="nx">enc</span> <span class="o">=</span> <span class="nx">base64</span><span class="p">.</span><span class="nx">encode</span><span class="p">(</span><span class="s1">&#39;я обожаю ириськи&#39;</span><span class="p">);</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">enc</span><span class="p">);</span>
+<span class="c1">// -&gt; &#39;0Y8g0L7QsdC+0LbQsNGOINC40YDQuNGB0YzQutC4&#39;</span>
+</code></pre></div>
+<h5>UPDATE (2014-12-03)</h5>
+
+<p>This was written long time ago, and since then there&rsquo;s an awesome and maintained
+<a href="https://github.com/dankogai/js-base64">package by Dan Kogai</a>. Also I encourage you to take a look at MDN&rsquo;s
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/WindowBase64/Base64_encoding_and_decoding">Base64 encoding and decoding</a> article as well.</p>
+
+</article>
+
+
+  <section class="downloads">
+    <h2>Downloadable bits</h2>
+    <ul>
+      
+        <a href="/downloads/2011-11-11-base64-encodedecode-of-utf8-in-browser-with-js.zip">2011-11-11-base64-encodedecode-of-utf8-in-browser-with-js.zip</a>
+      
+    </ul>
+  </section>
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

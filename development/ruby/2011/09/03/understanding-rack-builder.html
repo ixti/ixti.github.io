@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Understanding Rack Builder * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>Understanding Rack Builder</h2>
+    
+    <ul class="post-info">
+  <li>Date: 03 Sep 2011</li>
+
+  
+    <li>Category: <a href="/categories/development/ruby.html">development/ruby</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/rack.html">rack</a>, <a href="/tags/server.html">server</a>, <a href="/tags/rails.html">rails</a>, <a href="/tags/sinatra.html">sinatra</a>, and <a href="/tags/ruby.html">ruby</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>Most of the web-frameworks for Ruby today use <a href="http://rack.rubyforge.org/">Rack</a> - awesome web-server
+interface <a href="http://chneukirchen.org/blog/archive/2007/02/introducing-rack.html">introduced</a> in 2007. Although Rack is not something new that just
+released, most of us still aware of it <em>(Hi, varnak!)</em>, even denying the fact
+that there&rsquo;s simple <a href="https://github.com/rack/rack/wiki/Tutorials">tutorials</a> giving idea of how to build your own simple
+application. Unfortunately, I didn&rsquo;t found good explanation about one of the
+most awesome part of the Rack - Builder. So this post is some kind of reading
+sources of Builder loud in order to understand it.</p>
+
+<p>At first attempt I was going to explain the use and internals of <code>map</code> method
+only. But then I realized that I can&rsquo;t. At least without explaining other
+Builder&rsquo;s internals first. So let&rsquo;s go!</p>
+
+<h3>Basic Information</h3>
+
+<p>First of all, I would like to mention important things about middlewares:</p>
+
+<ul>
+<li>each middleware is an object that responds to <code>call()</code> method</li>
+<li><code>call()</code> method accepts only one argument - <em>environment</em></li>
+<li><code>call()</code> returns an array of
+
+<ul>
+<li>integer response code</li>
+<li>hash of headers</li>
+<li>array of body strings</li>
+</ul></li>
+</ul>
+
+<p>Second important thing is that your <em>rackup</em> file is running as part of
+Builder&rsquo;s instance code. So <code>self</code> in that scope refers to main Builder&rsquo;s
+instance. Dummy test explains it even better than I do:</p>
+<div class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>cat &gt; demo.ru
+puts self
+
+<span class="nv">$ </span>rackup demo.ru
+<span class="c">#&lt;Rack::Builder:0x9b8a728&gt;</span>
+<span class="o">[</span>2011-09-03 16:22:20<span class="o">]</span> INFO  WEBrick 1.3.1
+...
+</code></pre></div>
+<h3>Executing Middlewares&#39; Stack</h3>
+
+<p>This is the most interesting part. Every time you call <code>use()</code> method of Builder
+instance it adds a procedure that creates instance of given middleware with
+giving application to it. So <code>@use</code> array consist of something like this:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">proc</span> <span class="p">{</span> <span class="o">|</span><span class="n">app</span><span class="o">|</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Static</span><span class="o">.</span><span class="n">new</span> <span class="n">app</span><span class="p">,</span> <span class="p">{</span><span class="ss">:urls</span> <span class="o">=&gt;</span> <span class="s1">&#39;/images&#39;</span><span class="p">,</span> <span class="ss">:root</span> <span class="o">=&gt;</span> <span class="s1">&#39;public&#39;</span><span class="p">}</span> <span class="p">}</span>
+</code></pre></div>
+<p>Also, Builder instance has an associated application which is given by <code>run()</code>
+method:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+  <span class="vi">@run</span> <span class="o">=</span> <span class="n">app</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Now, when request is being processed, <code>call()</code> method of Builder instance is
+triggered. In it&rsquo;s turn it grabs <code>app</code> variable as result of generated map of
+applications (will discuss later) or <code>@run</code> instance. After that it finds first
+middleware in the <code>@use</code> stack and proxies <code>call()</code> to it.</p>
+
+<p>Let&rsquo;s take a look on this method more preciously. Inside the <code>call()</code> method of
+Builder instance it first defines variable (in the scope of method): <code>app</code> which
+is either an application from the <code>mappings</code> or <code>@run</code>. Then it reverses <code>@use</code>
+stack - so the last defined (with <code>use()</code> method) becomes the first element of
+array - calls each <code>proc</code> and returns the latest result. Here&rsquo;s basic idea of
+what&rsquo;s going on:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="vi">@use</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="vi">@run</span><span class="p">){</span> <span class="o">|</span><span class="n">app</span><span class="p">,</span><span class="n">factory</span><span class="o">|</span> <span class="n">factory</span><span class="o">[</span><span class="n">app</span><span class="o">]</span> <span class="p">}</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+</code></pre></div>
+<p>As you can see each iterator block returns result of executing of procedure with
+passing <code>app</code> local variable. So to make sure we all understand the magic above
+here what happens explained:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+  <span class="n">app</span> <span class="o">=</span> <span class="vi">@map</span> <span class="p">?</span> <span class="n">generate_map</span><span class="p">(</span><span class="vi">@run</span><span class="p">,</span> <span class="vi">@map</span><span class="p">)</span> <span class="p">:</span> <span class="vi">@run</span>
+  <span class="nb">fail</span> <span class="s2">&quot;missing run or map statement&quot;</span> <span class="k">unless</span> <span class="n">app</span>
+
+  <span class="c1"># first we are getting reversed array of factories</span>
+  <span class="c1"># then we are calling inject with initial memo = app</span>
+  <span class="c1"># memo - is the first argument of inject block (`a` in our case)</span>
+  <span class="c1"># after all latest memo is returned</span>
+  <span class="n">first</span> <span class="o">=</span> <span class="vi">@use</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">app</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">a</span><span class="p">,</span><span class="n">e</span><span class="o">|</span>
+    <span class="c1"># `a` is a reference to app (when this block is called for the first element</span>
+    <span class="c1"># of array) or a reference to the result of previous iteration</span>
+    <span class="c1"># e is a `proc` object and calling e[a] is a shorthand to e.call(a)</span>
+    <span class="n">e</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="c1"># inject returns latest value of memo, which is either app itself when @use is</span>
+  <span class="c1"># empty, or first middleware instance from the stack</span>
+  <span class="n">first</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>So the main magic is - <code>inject</code> method. If our <code>@use</code> stack is empty it will
+return object given as initial memo - <code>app</code> in our case, otherwise it will
+return the latest result of the block. To understand how inject works, let&rsquo;s
+see it on dummy example:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">puts</span> <span class="sx">%w[b c d e]</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">){</span> <span class="o">|</span><span class="n">prev</span><span class="p">,</span><span class="n">curr</span><span class="o">|</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">prev</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">#{</span><span class="n">curr</span><span class="si">}</span><span class="s2">&quot;</span> <span class="p">}</span>
+</code></pre></div>
+<p>The above will output <code>a -&gt; b -&gt; c -&gt; d -&gt; e</code> string. So now you got more info
+about magic&rsquo;s background ;)) Let&rsquo;s take a look at this magic again but with
+synthetic example (refer to <em>stacking.rb</em> at the bottom). First of all let&rsquo;s
+define three classes <em>DummyA</em>, <em>DummyB</em> and <em>DummyC</em>:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">class</span> <span class="nc">DummyA</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">app</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s1">&#39;Calling DummyA&#39;</span>
+    <span class="n">str</span><span class="o">.</span><span class="n">upcase</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+
+<span class="k">class</span> <span class="nc">DummyB</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">app</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s1">&#39;Calling DummyB&#39;</span>
+    <span class="n">str</span><span class="o">.</span><span class="n">downcase</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+
+<span class="k">class</span> <span class="nc">DummyC</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">app</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+    <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s1">&#39;Calling DummyC&#39;</span>
+    <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">str</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Each of them can be used as application or as middleware. The only difference is
+that <code>call()</code> of DummyA and DummyB returns modified string, and DummyC passes
+execution to the next middleware. Now let&rsquo;s create and call stack that will call
+DummyC first, then will call DummyB and will stop execution (see more samples in
+<em>stacking.rb</em>):</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">app</span> <span class="o">=</span> <span class="no">DummyA</span><span class="o">.</span><span class="n">new</span>
+<span class="n">stack</span> <span class="o">=</span> <span class="o">[</span> <span class="nb">proc</span> <span class="p">{</span><span class="o">|</span><span class="n">app</span><span class="o">|</span> <span class="no">DummyC</span><span class="o">.</span><span class="n">new</span> <span class="n">app</span> <span class="p">},</span> <span class="nb">proc</span> <span class="p">{</span><span class="o">|</span><span class="n">app</span><span class="o">|</span> <span class="no">DummyB</span><span class="o">.</span><span class="n">new</span> <span class="n">app</span> <span class="p">}</span> <span class="o">]</span>
+<span class="nb">puts</span> <span class="n">stack</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">inject</span><span class="p">(</span><span class="n">app</span><span class="p">){</span> <span class="o">|</span><span class="n">a</span><span class="p">,</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="o">[</span><span class="n">a</span><span class="o">]</span> <span class="p">}</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;FooBar&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>This will produce following output:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">Calling DummyC
+Calling DummyB
+foobar
+</code></pre></div>
+<p>Let&rsquo;s see what happens there. <code>stack</code> consist of two factories: first one
+creates instance of DummyC middleware, second instance of DummyB. Now what
+happens when we call <code>inject(app){ |a,e| e[a] }</code> on reversed stack:</p>
+
+<ul>
+<li>create instance of <em>DummyB</em> with <code>app</code> passed to its constructor</li>
+<li>create instance of <em>DummyC</em> with instance of middleware created on previous
+iteration (instance of <em>DummyB</em>)</li>
+</ul>
+
+<p>So when we call <code>call(&quot;FooBar&quot;)</code> execution goes following way:</p>
+
+<ul>
+<li>DummyC.call</li>
+<li>DummyB.call</li>
+</ul>
+
+<p>In other words. Decision to pass execution to the next middleware or not it
+absolutely in the authority of current executed middleware. And middlewares are
+stacked as Russian <a href="http://en.wikipedia.org/wiki/Matryoshka_doll">matryoshka</a>, so in the example above:</p>
+
+<ul>
+<li>DummyC&rsquo;s <code>@app</code> property points to instance of DummyB</li>
+<li>DummyB&rsquo;s <code>@app</code> property points to instance of DummyA</li>
+<li>DummyA&rsquo;s <code>@app</code> property is <code>nil</code></li>
+</ul>
+
+<h3>Map Middlewares</h3>
+
+<p>Finally! We got here! The topic that made me start this post. :)) The primitive
+rackup file looks like this:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">CommonLogger</span>
+<span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Static</span><span class="p">,</span> <span class="p">{</span><span class="ss">:urls</span> <span class="o">=&gt;</span> <span class="sx">%w{/css /images /js}</span><span class="p">,</span> <span class="ss">:root</span> <span class="o">=&gt;</span> <span class="s1">&#39;public&#39;</span><span class="p">}</span>
+<span class="n">run</span> <span class="no">Application</span><span class="o">.</span><span class="n">new</span>
+</code></pre></div>
+<p>According to knowledge from above, we can see that, request is first processed
+by <em>CommonLogger</em>, then it&rsquo;s being processed by <em>Static</em> which in it&rsquo;s turn
+decides serve it by itself or pass execution down, and then (if <em>Static</em>
+middleware passed execution) <em>Application</em> receives a call request.</p>
+
+<p>So the easiest way to &ldquo;map&rdquo; your middleware is when middleware supports some
+kind of &ldquo;URL map&rdquo; limitations. According to example above, <em>Static</em> middleware
+basically can be something like this:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Static</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="p">{})</span>
+      <span class="vi">@app</span> <span class="o">=</span> <span class="n">app</span>
+      <span class="vi">@urls</span> <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="ss">:urls</span><span class="o">]</span>
+      <span class="vi">@root</span> <span class="o">=</span> <span class="n">options</span><span class="o">[</span><span class="ss">:root</span><span class="o">]</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+      <span class="k">return</span> <span class="vi">@app</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="k">unless</span> <span class="vi">@urls</span><span class="o">.</span><span class="n">include?</span> <span class="n">env</span><span class="o">[</span><span class="s2">&quot;PATH_INFO&quot;</span><span class="o">]</span>
+      <span class="c1"># main processing goes here ...</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>That&rsquo;s the most easiest way. But there&rsquo;s alternative way, when middleware does
+not provides such ability (e.g. <code>Rack::Directory</code>) - Builder&rsquo;s method <code>map()</code>.</p>
+
+<blockquote>
+<p><strong>NOTICE</strong> In fact <em>Rack::Directory</em> is not a middleware. It&rsquo;s an application.
+So you can&rsquo;t pass it to <code>use()</code> method. Middleware should accept instance of
+next aaplication or middleware as first argument of constructor.</p>
+</blockquote>
+
+<p>This method creates an instance of <em>URLMap</em> which in it&rsquo;s turn a special
+middleware. So if you started to use <code>map()</code> you will need to define map for
+default route as well, in other words, this won&rsquo;t work:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">map</span> <span class="s2">&quot;/blog&quot;</span> <span class="k">do</span>
+  <span class="n">run</span> <span class="no">BlogApplication</span><span class="o">.</span><span class="n">new</span>
+<span class="k">end</span>
+
+<span class="n">run</span> <span class="no">MainApplication</span><span class="o">.</span><span class="n">new</span>
+</code></pre></div>
+<p>Instead you need to write it as:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">map</span> <span class="s2">&quot;/blog&quot;</span> <span class="k">do</span>
+  <span class="n">run</span> <span class="no">BlogApplication</span><span class="o">.</span><span class="n">new</span>
+<span class="k">end</span>
+
+<span class="n">map</span> <span class="s2">&quot;/&quot;</span> <span class="k">do</span>
+  <span class="n">run</span> <span class="no">MainApplication</span><span class="o">.</span><span class="n">new</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>And here&rsquo;s why! First call of <code>map()</code> first of all creates instance of <em>URLMap</em>.
+Also each <code>map()</code> attaches new instance of <code>Builder</code> with given block evaluated
+under scope of its context. So if we will pretend that URLMap is just a hash of
+<em>route =&gt; Builder instance</em> pairs, then it would be something like this:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">map</span><span class="o">[</span><span class="s2">&quot;/blog&quot;</span><span class="o">]</span> <span class="o">=</span> <span class="no">Builder</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">default_app</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">run</span> <span class="no">BlogApplication</span><span class="o">.</span><span class="n">new</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>When execution is passed to URLMap it will call appropriate Builder, e.g. in the
+example above request to <code>/blog/foobar</code> will pass execution to <code>call()</code> method
+of <em>BlogApplication</em> instance and <code>env[&quot;PATH_INFO&quot;]</code> will be <code>/foobar</code>.</p>
+
+<p>That means that we can &ldquo;bind&rdquo; middlewares as follows in order to limit their
+scope of responsibility:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">CommonLogger</span>
+
+<span class="c1"># self here is an instance of first Builder</span>
+
+<span class="n">use</span> <span class="s2">&quot;/downloads&quot;</span> <span class="k">do</span>
+  <span class="c1"># self here is an instance of second Builder</span>
+  <span class="n">use</span> <span class="no">SomeMiddleware</span><span class="p">,</span> <span class="ss">:root</span> <span class="o">=&gt;</span> <span class="s1">&#39;public/downloads&#39;</span>
+  <span class="n">run</span> <span class="nb">proc</span> <span class="p">{</span> <span class="o">[</span><span class="mi">500</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;Content-Type&quot;</span><span class="o">=&gt;</span><span class="s2">&quot;text/plain&quot;</span><span class="p">},</span> <span class="s2">&quot;Application Error&quot;</span><span class="o">]</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="n">map</span> <span class="s2">&quot;/&quot;</span> <span class="k">do</span>
+  <span class="c1"># self here is an instance of third Builder</span>
+  <span class="n">run</span> <span class="no">Application</span><span class="o">.</span><span class="n">new</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>After all, take a look on <a href="http://m.onkey.org/ruby-on-rack-2-the-builder">Builder&rsquo;s tutorial</a> for some other details and
+info about how you can easily nest maps.</p>
+
+</article>
+
+
+  <section class="downloads">
+    <h2>Downloadable bits</h2>
+    <ul>
+      
+        <a href="/downloads/2011-09-03-understanding-rack-builder.zip">2011-09-03-understanding-rack-builder.zip</a>
+      
+    </ul>
+  </section>
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>

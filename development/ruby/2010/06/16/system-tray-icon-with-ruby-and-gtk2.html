@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html class="nojs">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>System tray icon with Ruby and GTK2 * ixti's personal scratchpad</title>
+    <meta name="description" content="Personal blog of Aleksey V Zapparov AKA ixti">
+    <meta name="viewport" content="width=device-width">
+    <meta name="generator" content="jekyll">
+    <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans+Condensed:300:latin,cyrillic|Open+Sans::latin">
+    <link rel="stylesheet" href="/assets/app-7ec9dff94a465c2ed5d6865f8d106d58.css">
+    <script src="/assets/app-a5eac6a6dcd80a63d9a7222d0d345b93.js"></script>
+  </head>
+  <body class="light">
+    <header id="header">
+      <h1><a href="/"><span>personal scratchpad</span></a></h1>
+      <div id="top-navigation" class="navbar">
+        <ul>
+          <li><a href="https://github.com/ixti/ixti.github.com">Sources</a></li>
+          <li id="js-theme-switcher"><a href="#">Switch Theme</a></li>
+        </ul>
+        <ul>
+          <li><a href="https://github.com/ixti">GitHub</a></li>
+          <li><a href="http://es.linkedin.com/in/zapparov">LinkedIn</a></li>
+          <li><a href="https://twitter.com/zapparov">Twitter</a></li>
+          <li><a href="http://feeds.feedburner.com/ixti">RSS</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <article class="post">
+  <header>
+    <h2>System tray icon with Ruby and GTK2</h2>
+    
+    <ul class="post-info">
+  <li>Date: 16 Jun 2010</li>
+
+  
+    <li>Category: <a href="/categories/development/ruby.html">development/ruby</a></li>
+  
+
+  
+    <li>Tagged with: <a href="/tags/gtk.html">gtk</a>, <a href="/tags/ruby.html">ruby</a>, and <a href="/tags/system-tray.html">system-tray</a></li>
+  
+</ul>
+
+  </header>
+
+  <p>Everybody knows what system tray is. My friends (Hello, bigote and stanislavv!)
+were suggesting to start using FVWM and it&rsquo;s pager instead of using system tray.
+But I was not inspired by pager. Probably because I was too lazy to try it in
+action for more than 1 minute. Anyway. One day I realized that I need something
+to notify me via system tray icon. So today I&rsquo;m going to create a simple system
+tray icon in ruby with GTK step by step&hellip;</p>
+
+<p>First of all let&rsquo;s create a really simple (and absolutely dumb) version, which
+will only create a new system tray icon:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;gtk2&#39;</span>
+<span class="no">Gtk</span><span class="o">::</span><span class="no">StatusIcon</span><span class="o">.</span><span class="n">new</span>
+<span class="no">Gtk</span><span class="o">.</span><span class="n">main</span>
+</code></pre></div>
+<p>As you can see, first line <code>require &#39;gtk2&#39;</code> include GTK bindings. Then we
+creating a new instance of <code>Gtk::StatusIcon</code>. And finally run main GTK loop with
+<code>Gtk.main</code>. So basically first and the last lines are not very interesting and
+all following code snippets will be without these two lines to keep you focused
+on things that are really important ;)) But don&rsquo;t forget them when you&rsquo;ll be
+trying these snippets&hellip;</p>
+
+<p>If you tried the snippet above, you might notice that it adds a blank icon into
+system tray. Looks at least strange, so let&rsquo;s add some image to it. With GTK you
+can use stock image, by setting <code>stock</code> instance property of <code>StatusIcon</code>:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">si</span>        <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">StatusIcon</span><span class="o">.</span><span class="n">new</span>
+<span class="n">si</span><span class="o">.</span><span class="n">stock</span>  <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">Stock</span><span class="o">::</span><span class="no">DIALOG_INFO</span>
+</code></pre></div>
+<p>Or you can you your own custom image by setting <code>pixbuf</code> instance property:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">si</span>        <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">StatusIcon</span><span class="o">.</span><span class="n">new</span>
+<span class="n">si</span><span class="o">.</span><span class="n">pixbuf</span> <span class="o">=</span> <span class="no">Gdk</span><span class="o">::</span><span class="no">Pixbuf</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;/path/to/some/image.png&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>You can specify both <code>stock</code> and <code>pixbuf</code> - but only the last one will be used.
+So:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">si</span>        <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">StatusIcon</span><span class="o">.</span><span class="n">new</span>
+<span class="n">si</span><span class="o">.</span><span class="n">pixbuf</span> <span class="o">=</span> <span class="no">Gdk</span><span class="o">::</span><span class="no">Pixbuf</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;/path/to/some/image.png&#39;</span><span class="p">)</span>
+<span class="n">si</span><span class="o">.</span><span class="n">stock</span>  <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">Stock</span><span class="o">::</span><span class="no">DIALOG_INFO</span>
+</code></pre></div>
+<p>Will initiate a system tray icon with <code>Gtk::Stock::DIALOG_INFO</code> stock image.</p>
+
+<p>Now, when out system tray icon has a nice looking image, let&rsquo;s add some
+funkiness. Let&rsquo;s make icon start blinking on left clicking it, and stop on
+clicking it again. To make icon blink, you need to set <code>blinking</code> instance
+property to <code>true</code>, e.g.:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">si</span><span class="o">.</span><span class="n">blinking</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre></div>
+<p>But we want it to be turned on|off mouse left click. To do so, we need to
+connect an <code>activate</code> signal:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">si</span><span class="o">.</span><span class="n">signal_connect</span><span class="p">(</span><span class="s1">&#39;activate&#39;</span><span class="p">){</span> <span class="o">|</span><span class="n">icon</span><span class="o">|</span> <span class="n">icon</span><span class="o">.</span><span class="n">blinking</span> <span class="o">=</span> <span class="o">!</span><span class="p">(</span><span class="n">icon</span><span class="o">.</span><span class="n">blinking?</span><span class="p">)</span> <span class="p">}</span>
+</code></pre></div>
+<p>Cool! Now it&rsquo;s cool! But don&rsquo;t stop. Let&rsquo;s add a pop-up menu for mouse right
+clicking. To handle right click you need to use <code>popup-menu</code> signal, something
+like this:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">si</span><span class="o">.</span><span class="n">signal_connect</span><span class="p">(</span><span class="s1">&#39;popup-menu&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">tray</span><span class="p">,</span> <span class="n">button</span><span class="p">,</span> <span class="n">time</span><span class="o">|</span>
+  <span class="c1"># something to do?</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>Creating a popup-menu is little bit out of the scope, but to accomplish my first
+system tray idiotic application, I will show it too. First, we need to create a
+<code>Gtk::Menu</code> instance:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">menu</span> <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">Menu</span><span class="o">.</span><span class="n">new</span>
+</code></pre></div>
+<p>Fill it with items, call <code>show_all</code> instance method, and call <code>popup</code> method
+when we need it to be popped up. Now let&rsquo;s create a new item quit item, make it
+call <code>Gtk.main_quit</code> on click, and append it to the menu:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">menu</span> <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">Menu</span><span class="o">.</span><span class="n">new</span>
+<span class="n">quit</span> <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">ImageMenuItem</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Gtk</span><span class="o">::</span><span class="no">Stock</span><span class="o">::</span><span class="no">QUIT</span><span class="p">)</span>
+
+<span class="n">quit</span><span class="o">.</span><span class="n">signal_connect</span><span class="p">(</span><span class="s1">&#39;activate&#39;</span><span class="p">){</span> <span class="no">Gtk</span><span class="o">.</span><span class="n">main_quit</span> <span class="p">}</span>
+<span class="n">menu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">quit</span><span class="p">)</span>
+<span class="n">menu</span><span class="o">.</span><span class="n">show_all</span>
+</code></pre></div>
+<p>So all we need no is to call <code>menu.popup</code> inside <code>popup-menu</code> signal handler:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">si</span><span class="o">.</span><span class="n">signal_connect</span><span class="p">(</span><span class="s1">&#39;popup-menu&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">icon</span><span class="p">,</span> <span class="n">button</span><span class="p">,</span> <span class="n">time</span><span class="o">|</span>
+  <span class="n">menu</span><span class="o">.</span><span class="n">popup</span><span class="p">(</span><span class="kp">nil</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">button</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>
+<p>And altogether now:</p>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;gtk2&#39;</span>
+
+<span class="n">si</span>        <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">StatusIcon</span><span class="o">.</span><span class="n">new</span>
+<span class="n">si</span><span class="o">.</span><span class="n">stock</span>  <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">Stock</span><span class="o">::</span><span class="no">DIALOG_INFO</span>
+
+<span class="n">si</span><span class="o">.</span><span class="n">signal_connect</span><span class="p">(</span><span class="s1">&#39;activate&#39;</span><span class="p">){</span> <span class="o">|</span><span class="n">icon</span><span class="o">|</span> <span class="n">icon</span><span class="o">.</span><span class="n">blinking</span> <span class="o">=</span> <span class="o">!</span><span class="p">(</span><span class="n">icon</span><span class="o">.</span><span class="n">blinking?</span><span class="p">)</span> <span class="p">}</span>
+
+<span class="n">menu</span> <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">Menu</span><span class="o">.</span><span class="n">new</span>
+<span class="n">quit</span> <span class="o">=</span> <span class="no">Gtk</span><span class="o">::</span><span class="no">ImageMenuItem</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="no">Gtk</span><span class="o">::</span><span class="no">Stock</span><span class="o">::</span><span class="no">QUIT</span><span class="p">)</span>
+
+<span class="n">quit</span><span class="o">.</span><span class="n">signal_connect</span><span class="p">(</span><span class="s1">&#39;activate&#39;</span><span class="p">){</span> <span class="no">Gtk</span><span class="o">.</span><span class="n">main_quit</span> <span class="p">}</span>
+<span class="n">menu</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">quit</span><span class="p">)</span>
+<span class="n">menu</span><span class="o">.</span><span class="n">show_all</span>
+
+<span class="n">si</span><span class="o">.</span><span class="n">signal_connect</span><span class="p">(</span><span class="s1">&#39;popup-menu&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">icon</span><span class="p">,</span> <span class="n">button</span><span class="p">,</span> <span class="n">time</span><span class="o">|</span>
+  <span class="n">menu</span><span class="o">.</span><span class="n">popup</span><span class="p">(</span><span class="kp">nil</span><span class="p">,</span> <span class="kp">nil</span><span class="p">,</span> <span class="n">button</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="no">Gtk</span><span class="o">.</span><span class="n">main</span>
+</code></pre></div>
+<p>After all, I want to thank Vincent Carmona, whose example was a vivid tutorial
+of how to make a much smarter (than mine) system tray icon with GTK and ruby.
+You will find his example as an attachment to this post. I recommend you to
+read it, if you are still reading this ;))</p>
+
+<h3>Useful links:</h3>
+
+<ul>
+<li><a href="http://ruby-gnome2.sourceforge.jp/hiki.cgi?cmd=view&amp;p=Gtk::StatusIcon">Gtk::StatusIcon documentation</a></li>
+<li><a href="http://ruby-gnome2.sourceforge.jp/hiki.cgi?StatusIcon+example#StatusIcon+example">Vincent Carmona&rsquo;s example</a></li>
+</ul>
+
+</article>
+
+
+
+<!-- DISQUS -->
+<div id="disqus_thread"></div>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+    <ul id="bottom-navigation" class="navbar">
+      
+        <li><a href="/archives/2014.html">2014</a></li>
+      
+        <li><a href="/archives/2013.html">2013</a></li>
+      
+        <li><a href="/archives/2012.html">2012</a></li>
+      
+        <li><a href="/archives/2011.html">2011</a></li>
+      
+        <li><a href="/archives/2010.html">2010</a></li>
+      
+    </ul>
+
+    <footer id="footer" role="contentinfo">
+      kindly generated by <a href="https://github.com/mojombo/jekyll">Jekyll</a>
+      ~
+      crafted by <a href="http://ixti.net">ixti</a>
+      using <a href="http://gimp.org/">Gimp</a>
+      and <a href="http://www.vim.org/">Vim</a>
+      ~
+      copyright &copy; 2010 Aleksey V Zapparov AKA ixti
+    </footer>
+  </body>
+</html>
